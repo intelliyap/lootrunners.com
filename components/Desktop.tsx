@@ -6,13 +6,15 @@ import Image from "next/image";
 import { createWindow } from "@/lib/createWindow";
 import { useCreateContextMenu } from "@/state/contextMenu";
 import { useServerPrograms } from "@/lib/useServerPrograms";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import cx from "classnames";
 
 export const Desktop = () => {
   const { programs } = useAtomValue(programsAtom);
   const dispatch = useSetAtom(programsAtom);
   const { fetchPrograms } = useServerPrograms();
   const didSync = useRef(false);
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
 
   useEffect(() => {
     if (didSync.current) return;
@@ -39,19 +41,37 @@ export const Desktop = () => {
   }, []);
 
   return (
-    <div className={styles.desktop}>
+    <div
+      className={styles.desktop}
+      onClick={() => setSelectedIcon(null)}
+    >
       {programs.map((program) => (
-        <ProgramIcon key={program.name} program={program} />
+        <ProgramIcon
+          key={program.name}
+          program={program}
+          isSelected={selectedIcon === program.id}
+          onSelect={() => setSelectedIcon(program.id)}
+        />
       ))}
     </div>
   );
 };
 
-function ProgramIcon({ program }: { program: ProgramEntry }) {
+function ProgramIcon({
+  program,
+  isSelected,
+  onSelect,
+}: {
+  program: ProgramEntry;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
   const createContextMenu = useCreateContextMenu();
   const dispatch = useSetAtom(programsAtom);
   const { deleteProgram } = useServerPrograms();
-  const runProgram = () => {
+  const lastClickRef = useRef(0);
+
+  const runProgram = useCallback(() => {
     createWindow({
       title: program.name,
       program: {
@@ -60,10 +80,25 @@ function ProgramIcon({ program }: { program: ProgramEntry }) {
       },
       icon: program.icon ?? undefined,
     });
+  }, [program]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const now = Date.now();
+    if (now - lastClickRef.current < 400) {
+      // Double-click — open the program
+      runProgram();
+      lastClickRef.current = 0;
+    } else {
+      // Single-click — select/focus the icon
+      onSelect();
+      lastClickRef.current = now;
+    }
   };
+
   return (
     <button
-      className={styles.programIcon}
+      className={cx(styles.programIcon, { [styles.selected]: isSelected })}
       {...createContextMenu([
         { label: "Run", onClick: runProgram },
         {
@@ -77,7 +112,7 @@ function ProgramIcon({ program }: { program: ProgramEntry }) {
           },
         },
       ])}
-      onClick={runProgram}
+      onClick={handleClick}
     >
       <Image
         unoptimized
