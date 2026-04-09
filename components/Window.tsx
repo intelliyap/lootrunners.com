@@ -121,11 +121,11 @@ export function Window({ id }: { id: string }) {
               }}
               onClick={() =>
                 createWindow({
-                  title: "Help",
+                  title: "Fix & Iterate",
                   program: { type: "help", targetWindowID: id },
                   size: {
-                    width: 200,
-                    height: 300,
+                    width: 340,
+                    height: 400,
                   },
                 })
               }

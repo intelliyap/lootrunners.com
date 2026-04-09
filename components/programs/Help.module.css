@@ -11,6 +11,8 @@
   display: inline-block;
   padding: 5px 10px;
   border-radius: 5px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .chatMessage.user {
@@ -95,6 +97,10 @@
 }
 
 .markdown {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+
   & p,
   & ul,
   & ol {
@@ -107,5 +113,29 @@
 
   & ol {
     padding: 0 16px;
+  }
+
+  & pre {
+    overflow-x: auto;
+    max-width: 100%;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    padding: 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  & code {
+    background: #ddd;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+
+  & pre code {
+    background: none;
+    padding: 0;
   }
 }

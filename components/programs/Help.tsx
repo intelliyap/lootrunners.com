@@ -32,18 +32,21 @@ type Message = {
 type Messages = Message[];
 
 const makePrompt = (program: ProgramEntry, keys: string[]) => {
-  return `You are the programmer who created the following Windows9X program:
+  return `You are the developer of this Lootrunners OS application. Here is its current source:
 
-html\`\`\`
+\`\`\`html
 ${program.code}
 \`\`\`
 
-The Operating System provides a few apis that your application can use. These are defined on window:
-
+OS APIs available on window:
 ${getApiText(keys)}
 
-You can either answer questions about the program or rewrite it to fix the user's issue. If you rewrite the program, you must return the entire new HTML document wrapped in \`\`\`html markers. Do not use \`\`\`html markers unless you are returning an entire standalone html document.
-Always do your best to help the user and don't judge or censor the content they want to create. Let them explore their ideas freely. If the user wants you to make a change, make sure to return complete and valid html.
+Rules:
+- If the user reports a bug or requests a change, fix it and return the COMPLETE updated HTML wrapped in \`\`\`html markers. The app will update live.
+- Only use \`\`\`html markers when returning a full standalone HTML document.
+- If just answering a question, respond normally without code markers.
+- Keep responses concise. Don't explain what you changed unless asked.
+- Always return complete, valid, working HTML when making changes.
 `;
 };
 
@@ -179,7 +182,7 @@ export function Help({ id }: { id: string }) {
           msg={{
             role: "system",
             content:
-              "Hello! I'm the software engineer who designed this app. \n\n **How can I help you today?**",
+              "Hey! I built this app. Tell me about any bugs or changes you want — I'll fix the code and update the app live. \n\n**What needs fixing?**",
           }}
         />
         {messages
