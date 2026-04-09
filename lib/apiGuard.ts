@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { query, hasDatabase } from "@/lib/db";
 import { isLocal } from "@/lib/isLocal";
+import { getCodeHash } from "@/lib/accessCode";
 
 const MAX_GENERATIONS_PER_HOUR = 20;
 
@@ -23,15 +24,18 @@ export async function checkAccess(
     );
   }
 
-  // Validate session exists
+  // Validate session exists AND was created with the current access code
+  const currentHash = getCodeHash();
   const sessionResult = await query(
-    "SELECT id FROM sessions WHERE id = $1",
-    [sessionId]
+    "SELECT id FROM sessions WHERE id = $1 AND (code_hash = $2 OR code_hash IS NULL)",
+    [sessionId, currentHash]
   );
 
   if (!sessionResult || sessionResult.rows.length === 0) {
+    // Clear the stale cookie
+    cookieStore.delete("lr_session");
     return new Response(
-      JSON.stringify({ error: "Invalid session" }),
+      JSON.stringify({ error: "Session expired. Please re-enter access code." }),
       { status: 401 }
     );
   }

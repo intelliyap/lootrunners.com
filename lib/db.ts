@@ -32,8 +32,13 @@ async function ensureTables() {
   await p.query(`
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
+      code_hash TEXT,
       created_at TIMESTAMP DEFAULT NOW()
     );
+  `);
+  // Add code_hash column if missing (existing installs)
+  await p.query(`
+    ALTER TABLE sessions ADD COLUMN IF NOT EXISTS code_hash TEXT;
   `);
   await p.query(`
     CREATE TABLE IF NOT EXISTS generations (
