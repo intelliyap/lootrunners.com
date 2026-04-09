@@ -27,7 +27,7 @@ export async function checkAccess(
   // Validate session exists AND was created with the current access code
   const currentHash = getCodeHash();
   const sessionResult = await query(
-    "SELECT id FROM sessions WHERE id = $1 AND (code_hash = $2 OR code_hash IS NULL)",
+    "SELECT id FROM sessions WHERE id = $1 AND code_hash = $2",
     [sessionId, currentHash]
   );
 

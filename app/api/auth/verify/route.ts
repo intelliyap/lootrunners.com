@@ -1,6 +1,16 @@
 import { query } from "@/lib/db";
 import { cookies } from "next/headers";
 import { getCodeHash } from "@/lib/accessCode";
+import crypto from "crypto";
+
+function constantTimeEqual(a: string, b: string): boolean {
+  const maxLen = Math.max(a.length, b.length);
+  const bufA = Buffer.alloc(maxLen, 0);
+  const bufB = Buffer.alloc(maxLen, 0);
+  bufA.write(a);
+  bufB.write(b);
+  return crypto.timingSafeEqual(bufA, bufB) && a.length === b.length;
+}
 
 export async function POST(req: Request) {
   const { code } = await req.json();
@@ -11,7 +21,7 @@ export async function POST(req: Request) {
     });
   }
 
-  if (code !== process.env.ACCESS_CODE) {
+  if (typeof code !== "string" || !constantTimeEqual(code, process.env.ACCESS_CODE)) {
     return new Response(JSON.stringify({ error: "Invalid access code" }), {
       status: 403,
     });
