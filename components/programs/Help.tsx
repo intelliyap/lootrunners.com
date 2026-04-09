@@ -176,7 +176,7 @@ export function Help({ id }: { id: string }) {
   };
 
   return (
-    <>
+    <div className={styles.chatContainer}>
       <div className={styles.chatBox}>
         <Message
           msg={{
@@ -243,7 +243,7 @@ export function Help({ id }: { id: string }) {
           Send
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
