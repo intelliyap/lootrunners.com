@@ -91,6 +91,7 @@ export function Help({ id }: { id: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachment, setAttachment] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   const sendMessage = async () => {
     const newMessage = {
@@ -120,13 +121,15 @@ export function Help({ id }: { id: string }) {
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        setMessages([
-          ...messages,
-          newMessage,
-          { role: "assistant", content: `Error: ${response.status === 401 ? "Session expired. Please re-enter access code." : "Something went wrong. Please try again."}` },
-        ]);
-        console.error("Help API error:", response.status, errText);
+        if (response.status === 401) {
+          setNeedsAuth(true);
+        } else {
+          setMessages([
+            ...messages,
+            newMessage,
+            { role: "assistant", content: "Something went wrong. Please try again." },
+          ]);
+        }
         return;
       }
 
@@ -229,6 +232,12 @@ export function Help({ id }: { id: string }) {
           </div>
         )}
       </div>
+      {needsAuth ? (
+        <AccessCodeInline onSuccess={() => {
+          setNeedsAuth(false);
+          setIsLoading(false);
+        }} />
+      ) : (
       <div className={styles.chatInput}>
         <div
           role="button"
@@ -267,6 +276,7 @@ export function Help({ id }: { id: string }) {
           Send
         </button>
       </div>
+      )}
     </div>
   );
 }
@@ -311,3 +321,54 @@ const Message = ({ msg }: { msg: Message }) => {
     </div>
   );
 };
+
+function AccessCodeInline({ onSuccess }: { onSuccess: () => void }) {
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) {
+        onSuccess();
+      } else {
+        setError("Invalid code");
+      }
+    } catch {
+      setError("Connection error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className={styles.chatInput} style={{ flexDirection: "column", gap: 6 }}>
+      <div style={{ fontSize: 12, color: "#333" }}>
+        Session expired. Enter access code to continue:
+      </div>
+      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 5 }}>
+        <input
+          type="password"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          autoFocus
+          disabled={loading}
+          placeholder="Access code"
+          style={{ flex: 1 }}
+        />
+        <button type="submit" disabled={loading || !code}>
+          {loading ? "..." : "OK"}
+        </button>
+      </form>
+      {error && <div style={{ color: "red", fontSize: 11 }}>{error}</div>}
+    </div>
+  );
+}
