@@ -17,8 +17,8 @@ export async function insertGeneration({
   if (!flags.tokens) {
     return;
   }
-  await client
-    .from("generations")
+  await (client
+    .from("generations") as any)
     .insert({
       user_id: user.id,
       tokens_used: tokensUsed,

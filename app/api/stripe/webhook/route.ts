@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.metadata?.userId;
-    const client = createClient();
+    const client = await createClient();
 
     if (!userId) {
       return NextResponse.json({ error: "User ID not found" }, { status: 400 });

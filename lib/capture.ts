@@ -13,7 +13,7 @@ export async function capture(event: Event, req: Request) {
     return;
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const user = await supabase.auth.getUser();
   const { type, ...props } = event;
   const posthog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {

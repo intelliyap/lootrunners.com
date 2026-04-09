@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./Alert.module.css";
 import { useSetAtom, useAtomValue } from "jotai";
 import { windowsListAtom } from "@/state/windowsList";

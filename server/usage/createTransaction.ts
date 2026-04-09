@@ -12,7 +12,7 @@ export async function createTransaction({
   tokensPurchased: number;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await client.from("transactions").insert({
+    const { error } = await (client.from("transactions") as any).insert({
       user_id: userId,
       amount: amount,
       tokens_purchased: tokensPurchased,

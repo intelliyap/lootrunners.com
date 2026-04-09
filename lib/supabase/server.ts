@@ -2,8 +2,8 @@ import { Database } from "@/generated/supabase/types";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,9 +13,9 @@ export function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: any }) =>
               cookieStore.set(name, value, options)
             );
           } catch {
@@ -29,4 +29,4 @@ export function createClient() {
   );
 }
 
-export type Client = ReturnType<typeof createClient>;
+export type Client = Awaited<ReturnType<typeof createClient>>;

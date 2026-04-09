@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         status: 401,
       });
     }
-    const client = createClient();
+    const client = await createClient();
 
     if (!(await canGenerate(client, user))) {
       return createPaymentRequiredResponse();
