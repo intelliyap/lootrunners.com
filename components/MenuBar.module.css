@@ -28,10 +28,15 @@
   position: absolute;
   top: 100%;
   left: 0;
+  z-index: 10;
+  min-width: 120px;
 
   & > button {
     box-shadow: none !important;
     text-align: left;
+    display: block;
+    width: 100%;
+    padding: 4px 16px;
   }
 
   & > button:hover {
