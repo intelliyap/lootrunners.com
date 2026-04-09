@@ -84,11 +84,12 @@
 .logo {
   position: relative;
   image-rendering: pixelated;
-  max-width: 180px;
+  max-width: 400px;
+  width: 100%;
   object-fit: contain;
   filter: invert(1);
-  height: 86px;
-  margin-bottom: 12px;
+  height: auto;
+  margin-bottom: 16px;
 }
 
 .buttonGroup {
