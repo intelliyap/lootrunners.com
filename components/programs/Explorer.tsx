@@ -299,7 +299,7 @@ export function Explorer({ id }: { id: string }) {
           onDoubleClick={() => handleDoubleClick(itemPath)}
           className={cx({ highlighted: selectedItem === itemPath })}
           onClick={() => handleClick(itemPath)}
-          onContextMenu={createContextMenu([
+          {...createContextMenu([
             {
               label: "Delete",
               onClick: async () => {

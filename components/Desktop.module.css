@@ -49,18 +49,18 @@
 
 @media (max-width: 768px) {
   .desktop {
-    grid-template-columns: repeat(auto-fill, 80px);
-    grid-template-rows: repeat(auto-fill, 80px);
+    grid-template-columns: repeat(auto-fill, 88px);
+    grid-template-rows: repeat(auto-fill, 88px);
     gap: 8px;
     padding: 10px;
   }
 
   .programIcon img {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
   }
 
   .programName {
-    font-size: 10px;
+    font-size: 11px;
   }
 }

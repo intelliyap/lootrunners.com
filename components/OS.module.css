@@ -81,7 +81,7 @@
 
 @media (max-width: 768px) {
   .taskbar {
-    height: 40px;
+    height: 48px;
   }
 
   .startMenu {
@@ -94,5 +94,6 @@
 
   .windowButton {
     font-size: 12px;
+    min-height: 36px;
   }
 }

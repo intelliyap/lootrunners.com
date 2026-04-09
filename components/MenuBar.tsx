@@ -58,11 +58,19 @@ function MenuBarButton({
       closeMenu();
     };
 
+    const handleTouchStart = (event: TouchEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        closeMenu();
+      }
+    };
+
     window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("touchstart", handleTouchStart);
     window.addEventListener("blur", handleBlur);
 
     return () => {
       window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("blur", handleBlur);
     };
   }, [closeMenu]);

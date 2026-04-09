@@ -160,7 +160,7 @@ function IframeInner({ id }: { id: string }) {
     <iframe
       ref={ref}
       id={getIframeID(id)}
-      sandbox={!program?.code ? "allow-same-origin" : undefined}
+      sandbox={program?.code ? "allow-scripts" : "allow-scripts allow-same-origin"}
       src={!program?.code ? url : undefined}
       srcDoc={program?.code || undefined}
       style={{ width: "100%", flexGrow: 1, border: "none" }}

@@ -22,14 +22,7 @@ interface CompletionResult {
   choices: [{ message: { content: string | null } }];
 }
 
-export async function createCompletion(params: {
-  settings: Settings;
-  label: string;
-  forceModel?: Settings["model"];
-  body: CompletionParams;
-  user: User | null;
-}): Promise<any> {
-  const { settings, forceModel, body } = params;
+function resolveModel(settings: Settings, forceModel?: Settings["model"]) {
   const { client, preferredModel, mode } = createClientFromSettings(settings);
   const model =
     forceModel === "cheap"
@@ -37,73 +30,65 @@ export async function createCompletion(params: {
       : forceModel === "best"
       ? getBestModel(mode)
       : preferredModel;
+  return { client, model };
+}
 
-  // Separate system messages from user/assistant messages
-  const systemMessages = body.messages.filter((m) => m.role === "system");
-  const conversationMessages = body.messages.filter(
-    (m) => m.role !== "system"
-  );
+function prepareMessages(messages: Message[]) {
+  const systemMessages = messages.filter((m) => m.role === "system");
+  const conversationMessages = messages.filter((m) => m.role !== "system");
   const system = systemMessages.map((m) => m.content).join("\n\n") || undefined;
-
   const anthropicMessages: Anthropic.MessageParam[] = conversationMessages.map(
     (m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })
   );
+  return { system, anthropicMessages };
+}
 
-  if (body.stream) {
-    // Return an async iterator that yields OpenAI-compatible chunks
-    const stream = await client.messages.stream({
-      model,
-      max_tokens: body.max_tokens || 4096,
-      system,
-      messages: anthropicMessages,
-      temperature: body.temperature,
-    });
+export function createStreamingCompletion(params: {
+  settings: Settings;
+  forceModel?: Settings["model"];
+  body: { messages: Message[]; max_tokens?: number; temperature?: number };
+}) {
+  const { settings, forceModel, body } = params;
+  const { client, model } = resolveModel(settings, forceModel);
+  const { system, anthropicMessages } = prepareMessages(body.messages);
 
-    // Create an async iterable that mimics OpenAI's stream format
-    const openaiCompatStream = {
-      [Symbol.asyncIterator]: async function* () {
-        for await (const event of stream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            yield {
-              choices: [
-                {
-                  delta: { content: event.delta.text },
-                  finish_reason: null,
-                },
-              ],
-            };
-          }
-        }
-        yield {
-          choices: [{ delta: {}, finish_reason: "stop" }],
-        };
-      },
-    };
+  return client.messages.stream({
+    model,
+    max_tokens: body.max_tokens || 4096,
+    system,
+    messages: anthropicMessages,
+    temperature: body.temperature,
+  });
+}
 
-    return openaiCompatStream;
-  } else {
-    // Non-streaming
-    const response = await client.messages.create({
-      model,
-      max_tokens: body.max_tokens || 4096,
-      system,
-      messages: anthropicMessages,
-      temperature: body.temperature,
-    });
+export async function createCompletion(params: {
+  settings: Settings;
+  label: string;
+  forceModel?: Settings["model"];
+  body: CompletionParams;
+  user: User | null;
+}): Promise<CompletionResult> {
+  const { settings, forceModel, body } = params;
+  const { client, model } = resolveModel(settings, forceModel);
+  const { system, anthropicMessages } = prepareMessages(body.messages);
 
-    const content =
-      response.content[0]?.type === "text" ? response.content[0].text : null;
+  const response = await client.messages.create({
+    model,
+    max_tokens: body.max_tokens || 4096,
+    system,
+    messages: anthropicMessages,
+    temperature: body.temperature,
+  });
 
-    const result: CompletionResult = {
-      choices: [{ message: { content } }],
-    };
+  const content =
+    response.content[0]?.type === "text" ? response.content[0].text : null;
 
-    return result;
-  }
+  const result: CompletionResult = {
+    choices: [{ message: { content } }],
+  };
+
+  return result;
 }

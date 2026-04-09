@@ -33,7 +33,7 @@ function ProgramIcon({ program }: { program: ProgramEntry }) {
   return (
     <button
       className={styles.programIcon}
-      onContextMenu={createContextMenu([
+      {...createContextMenu([
         { label: "Run", onClick: runProgram },
         {
           label: "Delete",
@@ -45,7 +45,7 @@ function ProgramIcon({ program }: { program: ProgramEntry }) {
           },
         },
       ])}
-      onDoubleClick={runProgram}
+      onClick={runProgram}
     >
       <Image
         unoptimized
