@@ -1,6 +1,6 @@
 export const config = {
   tokens: {
-    allowed: ["kirbyhood@gmail.com"],
+    allowed: [] as string[],
     enabled: true,
   },
 };
