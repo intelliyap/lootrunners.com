@@ -119,27 +119,51 @@ export function Help({ id }: { id: string }) {
         }),
       });
 
-      const data = await response.json();
-
-      const newHtml = data.match(betweenHtmlRegex);
-
-      if (newHtml) {
-        programsDispatch({
-          type: "UPDATE_PROGRAM",
-          payload: {
-            id: programID,
-            code: `<!DOCTYPE html><html>${newHtml[1]}</html>`,
-          },
-        });
+      if (!response.ok) {
+        const errText = await response.text();
+        setMessages([
+          ...messages,
+          newMessage,
+          { role: "assistant", content: `Error: ${response.status === 401 ? "Session expired. Please re-enter access code." : "Something went wrong. Please try again."}` },
+        ]);
+        console.error("Help API error:", response.status, errText);
+        return;
       }
 
+      const data = await response.json();
+
+      if (typeof data === "string") {
+        const newHtml = data.match(betweenHtmlRegex);
+
+        if (newHtml) {
+          programsDispatch({
+            type: "UPDATE_PROGRAM",
+            payload: {
+              id: programID,
+              code: `<!DOCTYPE html><html>${newHtml[1]}</html>`,
+            },
+          });
+        }
+
+        setMessages([
+          ...messages,
+          newMessage,
+          { role: "assistant", content: data },
+        ]);
+      } else {
+        setMessages([
+          ...messages,
+          newMessage,
+          { role: "assistant", content: "Unexpected response. Please try again." },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
       setMessages([
         ...messages,
         newMessage,
-        { role: "assistant", content: data },
+        { role: "assistant", content: "Connection error. Please try again." },
       ]);
-    } catch (error) {
-      console.error("Error sending message:", error);
     } finally {
       setIsLoading(false);
     }
