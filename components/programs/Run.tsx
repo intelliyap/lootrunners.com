@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { windowsListAtom } from "@/state/windowsList";
 import { createWindow } from "../../lib/createWindow";
 import { ProgramEntry, programsAtom } from "@/state/programs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSettings } from "@/lib/getSettings";
 import { settingsAtom } from "@/state/settings";
 import { useFlags } from "@/flags/context";
@@ -11,13 +11,100 @@ import { trpc } from "@/lib/api/client";
 import { SettingsLink } from "../SettingsLink";
 import wrappedFetch from "@/lib/wrappedFetch";
 
+function hasSession() {
+  return document.cookie.includes("lr_session=");
+}
+
+function AccessCodePrompt({ onSuccess }: { onSuccess: () => void }) {
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) {
+        onSuccess();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Invalid access code");
+      }
+    } catch {
+      setError("Connection error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", flexDirection: "column", gap: 8 }}
+    >
+      <p>Enter access code to generate programs:</p>
+      <div className="field-row">
+        <input
+          type="password"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          autoFocus
+          disabled={loading}
+          style={{ flex: 1 }}
+          placeholder="Access code"
+        />
+        <button type="submit" disabled={loading || !code}>
+          {loading ? "..." : "OK"}
+        </button>
+      </div>
+      {error && (
+        <p style={{ color: "red", margin: 0, fontSize: 12 }}>{error}</p>
+      )}
+    </form>
+  );
+}
+
 export function Run({ id }: { id: string }) {
   const windowsDispatch = useSetAtom(windowsListAtom);
   const programsDispatch = useSetAtom(programsAtom);
   const settings = useAtomValue(settingsAtom);
   const [isLoading, setIsLoading] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const flags = useFlags();
   const { data } = trpc.getTokens.useQuery();
+
+  useEffect(() => {
+    setAuthenticated(hasSession());
+  }, []);
+
+  if (!authenticated) {
+    return (
+      <div style={{ padding: 4 }}>
+        <AccessCodePrompt onSuccess={() => setAuthenticated(true)} />
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            justifyContent: "flex-end",
+            marginTop: 8,
+          }}
+        >
+          <button
+            onClick={() => windowsDispatch({ type: "REMOVE", payload: id })}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form
       style={{ display: "flex", flexDirection: "column", gap: 8 }}
@@ -68,8 +155,8 @@ export function Run({ id }: { id: string }) {
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         <p>
-          Type the description of the program you want to run and Windows will
-          create it for you.
+          Type the description of the program you want to run and Lootrunners
+          will create it for you.
         </p>
         {flags.tokens && (
           <>
