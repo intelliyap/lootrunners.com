@@ -16,6 +16,12 @@ export function streamAnthropicHtml(
         let sentIndex = 0;
 
         for await (const event of stream) {
+          // Abort if client disconnected
+          if (controller.desiredSize === null) {
+            stream.abort();
+            break;
+          }
+
           if (
             event.type !== "content_block_delta" ||
             event.delta.type !== "text_delta"
@@ -69,9 +75,20 @@ export function streamAnthropicHtml(
         }
         controller.close();
       } catch (e) {
-        console.error(e);
-        controller.error(e);
+        console.error("Stream error:", e);
+        try {
+          stream.abort();
+        } catch { /* already closed */ }
+        try {
+          controller.error(e);
+        } catch { /* already closed */ }
       }
+    },
+    cancel() {
+      // Client disconnected — abort the Anthropic stream to stop billing
+      try {
+        stream.abort();
+      } catch { /* already closed */ }
     },
   }).pipeThrough(new TextEncoderStream());
 }
