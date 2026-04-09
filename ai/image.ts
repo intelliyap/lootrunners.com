@@ -28,7 +28,7 @@ export async function generateIcon(prompt: string): Promise<Blob | null> {
     .webp({ quality: 80 })
     .toBuffer();
 
-  const blob = new Blob([processedImageBuffer], { type: "image/webp" });
+  const blob = new Blob([new Uint8Array(processedImageBuffer)], { type: "image/webp" });
 
   return blob;
 }
