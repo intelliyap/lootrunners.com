@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 export type Provider = "anthropic";
 
 export const getBestModel = (_mode: Provider) => {
-  return "claude-sonnet-4-5-20250514";
+  return "claude-sonnet-4-6";
 };
 
 export const getCheapestModel = (_mode: Provider) => {
