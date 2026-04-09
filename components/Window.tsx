@@ -159,10 +159,11 @@ export function Window({ id }: { id: string }) {
         style={{
           flex: 1,
           pointerEvents: isResizing ? "none" : "auto",
-          overflow: "hidden",
           marginTop: state.program.type === "iframe" ? 0 : undefined,
           display: "flex",
           flexDirection: "column",
+          overflow: "visible",
+          position: "relative",
         }}
       >
         <WindowMenuBar id={id} />
@@ -177,7 +178,7 @@ export function Window({ id }: { id: string }) {
             </div>
           </div>
         )}
-        <div style={{ flex: 1, display: state.loading ? "none" : "flex", flexDirection: "column", position: "relative" }}>
+        <div style={{ flex: 1, display: state.loading ? "none" : "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
           {focusedWindow !== id && state.program.type === "iframe" && (
             <div
               style={{
