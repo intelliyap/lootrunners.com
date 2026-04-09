@@ -45,6 +45,7 @@ export type WindowState = {
   program: Program;
   id: string;
   loading: boolean;
+  error?: string;
 };
 
 export type WindowAction =
@@ -83,7 +84,8 @@ export type WindowAction =
       };
     }
   | { type: "SET_ICON"; payload: string }
-  | { type: "UPDATE_PROGRAM"; payload: Partial<WindowState["program"]> };
+  | { type: "UPDATE_PROGRAM"; payload: Partial<WindowState["program"]> }
+  | { type: "SET_ERROR"; payload: string | undefined };
 
 export const windowAtomFamily = atomFamily((id: string) => {
   return atomWithReducer(
@@ -186,6 +188,8 @@ function windowReducerInner(
         ...state,
         program: { ...state.program, ...action.payload } as any,
       };
+    case "SET_ERROR":
+      return { ...state, error: action.payload };
     default:
       assertNever(action);
   }

@@ -1,4 +1,4 @@
-import { streamHtml } from "openai-html-stream";
+import { streamAnthropicHtml } from "@/ai/streamAnthropicHtml";
 import { getApiText } from "@/lib/apiText";
 import { createPaymentRequiredResponse } from "@/server/paymentRequiredResponse";
 
@@ -12,8 +12,7 @@ import { canGenerate } from "@/server/usage/canGenerate";
 import { createClient } from "@/lib/supabase/server";
 import { insertGeneration } from "@/server/usage/insertGeneration";
 import { isLocal } from "@/lib/isLocal";
-import { createCompletion } from "@/ai/createCompletion";
-import { User } from "@supabase/supabase-js";
+import { createStreamingCompletion } from "@/ai/createCompletion";
 import { getMaxTokens } from "@/ai/getMaxTokens";
 import { checkAccess } from "@/lib/apiGuard";
 
@@ -62,10 +61,9 @@ export async function GET(req: Request) {
     keys,
     settings,
     req,
-    user,
   });
   return new Response(
-    streamHtml(programStream, {
+    streamAnthropicHtml(programStream, {
       injectIntoHead: `<script src="/api.js"></script>
 <link
   rel="stylesheet" 
@@ -112,13 +110,11 @@ async function createProgramStream({
   keys,
   settings,
   req,
-  user,
 }: {
   desc: string;
   keys: string[];
   settings: Settings;
   req: Request;
-  user: User | null;
 }) {
   const { usedOwnKey, preferredModel } = createClientFromSettings(settings);
 
@@ -131,10 +127,8 @@ async function createProgramStream({
     req
   );
 
-  const stream = await createCompletion({
+  const stream = createStreamingCompletion({
     settings,
-    label: "program",
-    user,
     body: {
       messages: [
         {
@@ -148,7 +142,6 @@ async function createProgramStream({
       ],
       temperature: 1,
       max_tokens: getMaxTokens(settings),
-      stream: true,
     },
   });
 

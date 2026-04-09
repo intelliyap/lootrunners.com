@@ -28,24 +28,22 @@
   }
 }
 
-.jiggle {
-  animation: jiggleAnimation 15s infinite;
+.loadingOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  flex: 1;
 }
 
-@keyframes jiggleAnimation {
-  0%,
-  100% {
-    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-  }
-  25% {
-    transform: rotateX(5deg) rotateY(5deg) rotateZ(5deg);
-  }
-  50% {
-    transform: rotateX(-5deg) rotateY(-5deg) rotateZ(-5deg);
-  }
-  75% {
-    transform: rotateX(5deg) rotateY(5deg) rotateZ(5deg);
-  }
+.loadingText {
+  font-size: 14px;
+}
+
+.loadingActions {
+  margin-top: 8px;
 }
 
 .title {
@@ -54,4 +52,14 @@
   flex-direction: row;
   align-items: center;
   gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .window :global(.title-bar-controls) button {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .window :global(.title-bar) {
+    min-height: 36px;
+  }
 }

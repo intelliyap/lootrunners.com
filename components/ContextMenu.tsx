@@ -12,9 +12,11 @@ export function ContextMenu() {
     };
 
     window.addEventListener("click", handleClick);
+    window.addEventListener("touchstart", handleClick);
 
     return () => {
       window.removeEventListener("click", handleClick);
+      window.removeEventListener("touchstart", handleClick);
     };
   }, [setContextMenu]);
 

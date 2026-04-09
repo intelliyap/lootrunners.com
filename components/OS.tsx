@@ -87,7 +87,7 @@ function TaskBar() {
     <div className={cx("window", styles.taskbar)}>
       <button
         className={styles.startButton}
-        onMouseDown={(e) => {
+        onClick={(e) => {
           e.stopPropagation();
           setStartMenuOpen((v) => !v);
         }}

@@ -42,7 +42,7 @@ export function History({ id }: { id: string }) {
               version === program.currentVersion ? styles.current : ""
             }`}
             onClick={() => handleVersionChange(version)}
-            onContextMenu={handleContextMenu(version)}
+            {...handleContextMenu(version)}
           >
             <span className={styles.versionDate}>
               {new Date(version).toLocaleString()}

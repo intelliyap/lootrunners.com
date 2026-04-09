@@ -14,6 +14,7 @@ import { MIN_WINDOW_SIZE, windowAtomFamily } from "@/state/window";
 import { WindowBody } from "./WindowBody";
 import styles from "./Window.module.css";
 import { MouseEventHandler, TouchEventHandler, useEffect, useRef, useState } from "react";
+import { isMobile } from "@/lib/isMobile";
 import Image from "next/image";
 import { createWindow } from "@/lib/createWindow";
 import { WindowMenuBar } from "./WindowMenuBar";
@@ -25,6 +26,7 @@ export function Window({ id }: { id: string }) {
   const windowsDispatch = useSetAtom(windowsListAtom);
   const [focusedWindow, setFocusedWindow] = useAtom(focusedWindowAtom);
   const isResizing = useAtomValue(isResizingAtom);
+  const [mobile] = useState(() => isMobile());
   const [isMinimizing, setIsMinimizing] = useState(false);
   const prevStatusRef = useRef(state.status);
 
@@ -42,7 +44,6 @@ export function Window({ id }: { id: string }) {
   return (
     <div
       className={cx("window", {
-        [styles.jiggle]: state.loading,
         [styles.windowOpen]: state.status !== "minimized" && !isMinimizing,
         [styles.windowMinimize]: isMinimizing,
       })}
@@ -163,148 +164,164 @@ export function Window({ id }: { id: string }) {
         }}
       >
         <WindowMenuBar id={id} />
-        <WindowBody state={state} />
+        {state.loading ? (
+          <div className={styles.loadingOverlay}>
+            <progress />
+            <div className={styles.loadingText}>Generating program...</div>
+            <div className={styles.loadingActions}>
+              <button onClick={() => windowsDispatch({ type: "REMOVE", payload: id })}>
+                Stop
+              </button>
+            </div>
+          </div>
+        ) : (
+          <WindowBody state={state} />
+        )}
       </div>
-      {/* right side */}
-      <div
-        style={{
-          top: 0,
-          right: -4,
-          bottom: 0,
-          position: "absolute",
-          width: 7,
-          cursor: "ew-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "right", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* left side */}
-      <div
-        style={{
-          top: 0,
-          left: -4,
-          bottom: 0,
-          position: "absolute",
-          width: 7,
-          cursor: "ew-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "left", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* bottom side */}
-      <div
-        style={{
-          left: 0,
-          right: 0,
-          bottom: -4,
-          position: "absolute",
-          height: 7,
-          cursor: "ns-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "bottom", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* top side */}
-      <div
-        style={{
-          top: -4,
-          left: 0,
-          right: 0,
-          position: "absolute",
-          height: 7,
-          cursor: "ns-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "top", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* top left */}
-      <div
-        style={{
-          top: -4,
-          left: -4,
-          position: "absolute",
-          width: 7,
-          height: 7,
-          cursor: "nwse-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "top-left", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* top right */}
-      <div
-        style={{
-          top: -4,
-          right: -4,
-          position: "absolute",
-          width: 7,
-          height: 7,
-          cursor: "nesw-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "top-right", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* bottom left */}
-      <div
-        style={{
-          bottom: -4,
-          left: -4,
-          position: "absolute",
-          width: 7,
-          height: 7,
-          cursor: "nesw-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: { side: "bottom-left", dx: delta.x, dy: delta.y },
-          });
-        })}
-      ></div>
-      {/* bottom right */}
-      <div
-        style={{
-          bottom: -4,
-          right: -4,
-          position: "absolute",
-          width: 7,
-          height: 7,
-          cursor: "nwse-resize",
-        }}
-        {...createResizeEvent((_e, delta) => {
-          dispatch({
-            type: "RESIZE",
-            payload: {
-              side: "bottom-right",
-              dx: delta.x,
-              dy: delta.y,
-            },
-          });
-        })}
-      ></div>
+      {!mobile && (
+        <>
+          {/* right side */}
+          <div
+            style={{
+              top: 0,
+              right: -4,
+              bottom: 0,
+              position: "absolute",
+              width: 7,
+              cursor: "ew-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "right", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* left side */}
+          <div
+            style={{
+              top: 0,
+              left: -4,
+              bottom: 0,
+              position: "absolute",
+              width: 7,
+              cursor: "ew-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "left", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* bottom side */}
+          <div
+            style={{
+              left: 0,
+              right: 0,
+              bottom: -4,
+              position: "absolute",
+              height: 7,
+              cursor: "ns-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "bottom", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* top side */}
+          <div
+            style={{
+              top: -4,
+              left: 0,
+              right: 0,
+              position: "absolute",
+              height: 7,
+              cursor: "ns-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "top", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* top left */}
+          <div
+            style={{
+              top: -4,
+              left: -4,
+              position: "absolute",
+              width: 7,
+              height: 7,
+              cursor: "nwse-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "top-left", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* top right */}
+          <div
+            style={{
+              top: -4,
+              right: -4,
+              position: "absolute",
+              width: 7,
+              height: 7,
+              cursor: "nesw-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "top-right", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* bottom left */}
+          <div
+            style={{
+              bottom: -4,
+              left: -4,
+              position: "absolute",
+              width: 7,
+              height: 7,
+              cursor: "nesw-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: { side: "bottom-left", dx: delta.x, dy: delta.y },
+              });
+            })}
+          ></div>
+          {/* bottom right */}
+          <div
+            style={{
+              bottom: -4,
+              right: -4,
+              position: "absolute",
+              width: 7,
+              height: 7,
+              cursor: "nwse-resize",
+            }}
+            {...createResizeEvent((_e, delta) => {
+              dispatch({
+                type: "RESIZE",
+                payload: {
+                  side: "bottom-right",
+                  dx: delta.x,
+                  dy: delta.y,
+                },
+              });
+            })}
+          ></div>
+        </>
+      )}
     </div>
   );
 }
