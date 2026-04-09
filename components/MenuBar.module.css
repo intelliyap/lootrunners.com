@@ -25,10 +25,7 @@
 }
 
 .menuBarDropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 10;
+  z-index: 9999;
   min-width: 120px;
 
   & > button {

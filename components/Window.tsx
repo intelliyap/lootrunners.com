@@ -69,6 +69,7 @@ export function Window({ id }: { id: string }) {
             : `translate(${state.pos.x}px, ${state.pos.y}px)`,
         display: isHidden ? "none" : "flex",
         flexDirection: "column",
+        overflow: "hidden",
         zIndex: focusedWindow === id ? 1 : 0,
         isolation: "isolate",
         minWidth: MIN_WINDOW_SIZE.width,
@@ -162,7 +163,7 @@ export function Window({ id }: { id: string }) {
           marginTop: state.program.type === "iframe" ? 0 : undefined,
           display: "flex",
           flexDirection: "column",
-          overflow: "visible",
+          overflow: "hidden",
           position: "relative",
         }}
       >

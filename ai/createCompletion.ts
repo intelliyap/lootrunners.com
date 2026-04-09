@@ -33,6 +33,22 @@ function resolveModel(settings: Settings, forceModel?: Settings["model"]) {
   return { client, model };
 }
 
+function normalizeContent(content: any): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .map((c: any) => {
+        if (typeof c === "string") return c;
+        if (c?.type === "text") return c.text || "";
+        if (c?.type === "image_url") return "[image]";
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+  return String(content || "");
+}
+
 function prepareMessages(messages: Message[], trustedSystemOnly = false) {
   const systemMessages = messages.filter((m) => m.role === "system");
   const conversationMessages = messages.filter((m) => m.role !== "system");
@@ -44,11 +60,12 @@ function prepareMessages(messages: Message[], trustedSystemOnly = false) {
     : systemMessages.map((m) => m.content).join("\n\n") || undefined;
 
   // Force all non-system messages to only be "user" or "assistant"
+  // Normalize content to string (Help sends array format from OpenAI-style)
   const anthropicMessages: Anthropic.MessageParam[] = conversationMessages
     .filter((m) => m.role === "user" || m.role === "assistant")
     .map((m) => ({
       role: m.role as "user" | "assistant",
-      content: m.content,
+      content: normalizeContent(m.content),
     }));
   return { system, anthropicMessages };
 }
