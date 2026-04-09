@@ -166,7 +166,7 @@ function IframeInner({ id }: { id: string }) {
       sandbox={program?.code ? "allow-scripts" : "allow-scripts allow-same-origin"}
       src={!program?.code ? url : undefined}
       srcDoc={program?.code || undefined}
-      style={{ width: "100%", flexGrow: 1, border: "none" }}
+      style={{ width: "100%", height: "100%", flex: "1 1 0", minHeight: 0, border: "none" }}
       onError={() => {
         showUpsell();
       }}
