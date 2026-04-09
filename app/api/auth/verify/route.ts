@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import { cookies } from "next/headers";
+import { getCodeHash } from "@/lib/accessCode";
 
 export async function POST(req: Request) {
   const { code } = await req.json();
@@ -17,8 +18,9 @@ export async function POST(req: Request) {
   }
 
   const sessionId = crypto.randomUUID();
+  const codeHash = getCodeHash();
 
-  await query("INSERT INTO sessions (id) VALUES ($1)", [sessionId]);
+  await query("INSERT INTO sessions (id, code_hash) VALUES ($1, $2)", [sessionId, codeHash]);
 
   const cookieStore = await cookies();
   cookieStore.set("lr_session", sessionId, {
