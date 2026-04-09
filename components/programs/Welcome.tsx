@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from "./Welcome.module.css";
-import sawyersoft from "@/components/landing/assets/sawyersoft.png";
+import lootrunners from "../../public/lootrunners.png";
 import check from "@/components/assets/check.png";
 import { SettingsLink } from "../SettingsLink";
 import history from "./updateAssets/history.png";
@@ -55,7 +55,7 @@ const contentByKey = {
         <h3>Welcome</h3>
 
         <p>
-          Welcome to the exciting new world of Windows 9X, where your computer
+          Welcome to the exciting new world of Lootrunners, where your computer
           desktop meets Artificial Intelligence.
         </p>
         <p>
@@ -63,21 +63,21 @@ const contentByKey = {
         </p>
         <p>
           To get started, press <strong>Start &gt; Run</strong> and type the
-          description of the app you want to run. Windows 9X will create it for
+          description of the app you want to run. Lootrunners will create it for
           you. On any generated application you can also press the{" "}
           <strong>?</strong> button to chat with the developer and make changes
           to the program.
         </p>
         <div className={styles.buttonGroup}>
           <a
-            href="https://github.com/sawyerhood/windows9x"
+            href="https://github.com/intelliyap/lootrunners.com"
             target="_blank"
             rel="noopener noreferrer"
           >
             <button>GitHub</button>
           </a>
           <a
-            href="https://twitter.com/sawyerhood"
+            href="https://lootrunners.com"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -108,17 +108,17 @@ const contentByKey = {
         <h4>July 23rd, 2024</h4>
         <p>
           Introducing mounted file systems. You can now access a directory on
-          your computer inside of Windows 9X. Generate programs inside of
-          Windows 9X and use them to edit files on your actual file system.
+          your computer inside of Lootrunners. Generate programs inside of
+          Lootrunners and use them to edit files on your actual file system.
         </p>
         <Image src={mount} alt="Image of mounted filesystem" width={400} />
         <h4>July 19th, 2024</h4>
-        We now have the ability to sync your Windows 9X filesystem to your
+        We now have the ability to sync your Lootrunners filesystem to your
         actual file system! Open up Settings and choose a directory to set as
         your system directory. This will mount your filesystem to that directory
-        and any files you make in Windows 9X will be saved to that directory.
+        and any files you make in Lootrunners will be saved to that directory.
         You can also directly edit those files from your real operating system
-        and they will magically update in Windows 9X.
+        and they will magically update in Lootrunners.
         <hr />
         <h4>July 15th, 2024</h4>
         <p>
@@ -149,7 +149,7 @@ const contentByKey = {
         </p>
         <p>
           I&apos;ve also added a quick overview video that shows off some of the
-          things you can do in Windows 9X:
+          things you can do in Lootrunners:
         </p>
         <Video />
       </>
@@ -160,7 +160,7 @@ const contentByKey = {
       <>
         <h3>Filesystem</h3>
         <p>
-          In Windows 9X everything is a file. Including all of the programs that
+          In Lootrunners everything is a file. Including all of the programs that
           are running.
         </p>
         <p>
@@ -205,7 +205,7 @@ const contentByKey = {
         <Video />
         <p>
           Here is a quick video overview that shows off some of the things you
-          can do in Windows 9X.
+          can do in Lootrunners.
         </p>
       </>
     );
@@ -261,8 +261,8 @@ export function Welcome({ id: _id }: { id: string }) {
   return (
     <div className={styles.welcomeContainer}>
       <Image
-        src={sawyersoft}
-        alt="Sawyer Software Logo"
+        src={lootrunners}
+        alt="Lootrunners Logo"
         className={styles.logo}
       />
       <div className={styles.contentWrapper}>

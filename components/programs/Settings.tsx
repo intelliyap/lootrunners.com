@@ -121,7 +121,7 @@ function DirectorySection() {
       <div className={cx("field-row")}>
         <p className={styles.note}>
           This lets you choose a real directory on you computer where all of the
-          files inside of Windows 9X will be saved.
+          files inside of Lootrunners will be saved.
         </p>
       </div>
     </fieldset>

@@ -111,7 +111,7 @@ function StartMenu() {
       label: "Welcome",
       cb: () => {
         createWindow({
-          title: "Welcome to Windows 9X",
+          title: "Welcome to Lootrunners",
           program: { type: "welcome" },
           size: { width: WIDTH, height: "auto" },
         });
