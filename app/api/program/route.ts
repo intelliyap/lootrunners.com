@@ -91,7 +91,8 @@ Implement the application in HTML, CSS, and JavaScript. Use the 98.css library f
 
 Rules:
 - Output ONLY the raw HTML wrapped in <html> tags. No commentary, explanations, or markdown.
-- Make programs fill the entire available space.
+- The app runs inside a resizable iframe. Use width:100% and height:100% on html/body. Use relative units (%, vh, vw, flex, grid) not fixed pixel sizes for layout. The app must look good at any size.
+- Use overflow:auto on scrollable areas so content is accessible when the window is small.
 - Don't use external images — draw assets with CSS/SVG/canvas.
 - Don't use the 98.css \`window\` or \`window-body\` classes.
 - Don't add a menu bar — the OS handles that.
