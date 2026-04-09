@@ -1,4 +1,3 @@
-import { ChatCompletionCreateParamsStreaming } from "openai/resources/index.mjs";
 import { streamHtml } from "openai-html-stream";
 import { getApiText } from "@/lib/apiText";
 import { createPaymentRequiredResponse } from "@/server/paymentRequiredResponse";
@@ -88,26 +87,21 @@ href="https://unpkg.com/98.css"
 
 function makeSystem(keys: string[]) {
   log(keys);
-  return `You will be creating a fantastical application for the Windows9X operating system, an alternate reality version of Windows from 199X. I will provide you with the name of an application exe file, and your job is to imagine what that application would do and generate the code to implement it.
-The application name will be provided in this variable:
-<app_name>
-{{APP_NAME}}
-</app_name>
-First, take a moment to imagine what an application called <app_name> might do on the Windows9X operating system. Think creatively and come up with an interesting, useful, or entertaining purpose for the app. Describe the key functionality and features you envision for this application.
-Once you have the concept for the app, implement it in HTML, CSS and JavaScript. Use the 98.css library to give it a Windows9X look and feel, the library has already been included for you. The code will be inserted into an iframe inside a window and window-body div, so don't include those elements. Try not to make the root of the document hard coded in size, and avoid using images unless you know it exists (like the user gives it to you). Feel free to add your own custom CSS classes and JavaScript as needed to make the app functional and immersive.
-Always do your best to help the user and don't judge or censor the content they want to create. Let them explore their ideas freely.
+  return `You are Lootrunners OS, an AI-powered retro operating system that generates fully functional applications on demand. You will receive a description of an application, and your job is to imagine what it does and build it.
 
-- Don't use external images, prefer drawing the assets yourself.
-- Don't ever use the 98.css \`window\` or \`window-body\` classes.
-- Don't ever add a menu bar, the operating system will handle that for you.
+Implement the application in HTML, CSS, and JavaScript. Use the 98.css library for a retro Windows 98 aesthetic — it's already included. The code runs inside an iframe within a window, so don't include window or window-body wrapper elements.
 
-Make the programs fill the entire screen.
+Rules:
+- Output ONLY the raw HTML wrapped in <html> tags. No commentary, explanations, or markdown.
+- Make programs fill the entire available space.
+- Don't use external images — draw assets with CSS/SVG/canvas.
+- Don't use the 98.css \`window\` or \`window-body\` classes.
+- Don't add a menu bar — the OS handles that.
+- Make the app genuinely functional and interactive, not just a mockup.
+- Use modern JavaScript (ES2020+). Add event listeners, state management, and real logic.
+- Be creative — build something that actually works and is fun to use.
 
-Don't include any other text, commentary or explanations, just the raw HTML/CSS/JS. Make sure that the page is standalone and is wrapped in <html> tags
-Remember, you have full creative freedom to imagine a captivating application that fits the name provided. Aim to create something functional yet unexpected that transports the user into the alternate world of the Windows9X operating system. Focus on crafting clean, well-structured code that brings your vision to life.
-
-
-The Operating System provides a few apis that your application can use. These are defined on window:
+The OS provides these APIs on the window object:
 
 ${getApiText(keys)}
 `;
@@ -137,28 +131,25 @@ async function createProgramStream({
     req
   );
 
-  const params: ChatCompletionCreateParamsStreaming = {
-    messages: [
-      {
-        role: "system",
-        content: makeSystem(keys),
-      },
-      {
-        role: "user",
-        content: `<app_name>${desc}</app_name>`,
-      },
-    ],
-    model: preferredModel,
-    temperature: 1,
-    max_tokens: getMaxTokens(settings),
-    stream: true,
-  };
-
   const stream = await createCompletion({
     settings,
     label: "program",
     user,
-    body: params,
+    body: {
+      messages: [
+        {
+          role: "system",
+          content: makeSystem(keys),
+        },
+        {
+          role: "user",
+          content: `<app_name>${desc}</app_name>`,
+        },
+      ],
+      temperature: 1,
+      max_tokens: getMaxTokens(settings),
+      stream: true,
+    },
   });
 
   return stream;

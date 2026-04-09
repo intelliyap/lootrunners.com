@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 }
 
 const prompt = `You are an expert application namer. The user will give you a description
-of an application and you will create a simple name for it. These applications are for the
-Windows9X operating system, a retrofuturistic operating system. make the names creative and 
+of an application and you will create a simple name for it. These applications are for
+Lootrunners OS, a retrofuturistic AI-powered operating system. Make the names creative and
 whimsical. Put the name in <appname> tags.
 `;
