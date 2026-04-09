@@ -22,7 +22,12 @@ export async function POST(req: Request) {
     }
   }
 
-  const { messages } = body;
+  const { messages: rawMessages } = body;
+
+  // Strip any client-injected system messages and limit size
+  const messages = (rawMessages as any[])
+    .filter((m: any) => m.role === "user" || m.role === "assistant")
+    .slice(-20);
 
   log(messages);
 

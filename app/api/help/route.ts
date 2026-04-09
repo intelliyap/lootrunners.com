@@ -42,7 +42,14 @@ export async function POST(req: Request) {
     }
   }
 
-  const { messages } = body;
+  const { messages: rawMessages } = body;
+
+  // Keep only the first system message (server-set prompt) and recent user/assistant messages
+  const systemMsg = (rawMessages as any[]).find((m: any) => m.role === "system");
+  const conversationMsgs = (rawMessages as any[])
+    .filter((m: any) => m.role === "user" || m.role === "assistant")
+    .slice(-20);
+  const messages = systemMsg ? [systemMsg, ...conversationMsgs] : conversationMsgs;
 
   log(messages);
 
