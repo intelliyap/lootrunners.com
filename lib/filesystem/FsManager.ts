@@ -15,20 +15,56 @@ import {
   REGISTRY_PATH,
 } from "@/lib/filesystem/defaultFileSystem";
 
+const POLL_INTERVAL = 2000; // 2s instead of 500ms
+
+function smartPoll(refresh: () => void, removeAtom: () => void) {
+  let interval: ReturnType<typeof setInterval> | null = null;
+
+  const start = () => {
+    if (interval) return;
+    interval = setInterval(refresh, POLL_INTERVAL);
+  };
+
+  const stop = () => {
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
+  };
+
+  const onVisibility = () => {
+    document.hidden ? stop() : start();
+  };
+
+  // Only poll when tab is visible
+  if (typeof document !== "undefined" && !document.hidden) {
+    start();
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", onVisibility);
+  }
+
+  // Return cleanup function — called when atom has no more subscribers
+  return () => {
+    stop();
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", onVisibility);
+    }
+    // Remove atom from family cache so it can be GC'd
+    removeAtom();
+  };
+}
+
 export class FsManager {
   private rootDrive: Drive;
   private mountedDrives: { [name: string]: Drive } = {};
 
-  // TODO these atomFamilies need to be garbage collected
   private shallowAtoms = atomFamily((path: string) => {
     const baseAtom = atomWithRefresh(async () =>
       this.getFolder(path, "shallow")
     );
     baseAtom.onMount = (setAtom: () => void) => {
-      const interval = setInterval(() => {
-        setAtom();
-      }, 500);
-      return () => clearInterval(interval);
+      return smartPoll(setAtom, () => this.shallowAtoms.remove(path));
     };
     return baseAtom;
   });
@@ -36,10 +72,7 @@ export class FsManager {
   private deepAtoms = atomFamily((path: string) => {
     const baseAtom = atomWithRefresh(async () => this.getFolder(path, "deep"));
     baseAtom.onMount = (setAtom: () => void) => {
-      const interval = setInterval(() => {
-        setAtom();
-      }, 500);
-      return () => clearInterval(interval);
+      return smartPoll(setAtom, () => this.deepAtoms.remove(path));
     };
     return baseAtom;
   });
@@ -47,10 +80,7 @@ export class FsManager {
   private fileAtoms = atomFamily((path: string) => {
     const baseAtom = atomWithRefresh(async () => this.getFile(path, "deep"));
     baseAtom.onMount = (setAtom: () => void) => {
-      const interval = setInterval(() => {
-        setAtom();
-      }, 500);
-      return () => clearInterval(interval);
+      return smartPoll(setAtom, () => this.fileAtoms.remove(path));
     };
     return baseAtom;
   });
