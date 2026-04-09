@@ -37,6 +37,18 @@ async function ensureTables() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS programs (
+      id TEXT NOT NULL,
+      session_id TEXT REFERENCES sessions(id),
+      name TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      code TEXT,
+      icon TEXT,
+      created_at TIMESTAMP DEFAULT NOW(),
+      PRIMARY KEY (id, session_id)
+    );
+  `);
 
   initialized = true;
 }

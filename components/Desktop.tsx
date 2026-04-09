@@ -5,9 +5,39 @@ import window from "./assets/window.png";
 import Image from "next/image";
 import { createWindow } from "@/lib/createWindow";
 import { useCreateContextMenu } from "@/state/contextMenu";
+import { useServerPrograms } from "@/lib/useServerPrograms";
+import { useEffect, useRef } from "react";
 
 export const Desktop = () => {
   const { programs } = useAtomValue(programsAtom);
+  const dispatch = useSetAtom(programsAtom);
+  const { fetchPrograms } = useServerPrograms();
+  const didSync = useRef(false);
+
+  useEffect(() => {
+    if (didSync.current) return;
+    didSync.current = true;
+    fetchPrograms().then((serverPrograms) => {
+      if (!serverPrograms || !Array.isArray(serverPrograms)) return;
+      for (const sp of serverPrograms) {
+        const exists = programs.some((p) => p.id === sp.id);
+        if (!exists) {
+          dispatch({
+            type: "ADD_PROGRAM",
+            payload: {
+              id: sp.id,
+              name: sp.name,
+              prompt: sp.prompt,
+              code: sp.code ?? undefined,
+              icon: sp.icon ?? undefined,
+            },
+          });
+        }
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className={styles.desktop}>
       {programs.map((program) => (
@@ -20,6 +50,7 @@ export const Desktop = () => {
 function ProgramIcon({ program }: { program: ProgramEntry }) {
   const createContextMenu = useCreateContextMenu();
   const dispatch = useSetAtom(programsAtom);
+  const { deleteProgram } = useServerPrograms();
   const runProgram = () => {
     createWindow({
       title: program.name,
@@ -42,6 +73,7 @@ function ProgramIcon({ program }: { program: ProgramEntry }) {
               type: "REMOVE_PROGRAM",
               payload: program.name,
             });
+            deleteProgram(program.id);
           },
         },
       ])}
