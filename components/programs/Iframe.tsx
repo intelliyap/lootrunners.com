@@ -10,6 +10,7 @@ import { getSettings } from "@/lib/getSettings";
 import { settingsAtom } from "@/state/settings";
 import wrappedFetch from "@/lib/wrappedFetch";
 import { showUpsell } from "@/lib/showUpsell";
+import { useServerPrograms } from "@/lib/useServerPrograms";
 
 export function Iframe({ id }: { id: string }) {
   const window = useAtomValue(windowAtomFamily(id));
@@ -29,6 +30,7 @@ function IframeInner({ id }: { id: string }) {
   const startedRef = useRef(false);
   const registry = useAtomValue(registryAtom);
   const { model } = useAtomValue(settingsAtom);
+  const { saveProgram } = useServerPrograms();
 
   assert(state.program.type === "iframe", "Program is not an iframe");
 
@@ -66,12 +68,13 @@ function IframeInner({ id }: { id: string }) {
           icon: dataUri,
         },
       });
+      saveProgram({ id: programID, name: state.title, prompt: program?.prompt ?? "", icon: dataUri });
       startedRef.current = false;
     }
     if (!icon && model === "best") {
       fetchIcon();
     }
-  }, [state.title, dispatch, dispatchPrograms, icon, programID, model]);
+  }, [state.title, dispatch, dispatchPrograms, icon, programID, model, saveProgram, program?.prompt]);
 
   // Adding message event listener to the iframe to handle registry operations
   useEffect(() => {
@@ -187,6 +190,7 @@ function IframeInner({ id }: { id: string }) {
               code: outerHTML,
             },
           });
+          saveProgram({ id: programID, name: state.title, prompt: program?.prompt ?? "", code: outerHTML });
         }
       }}
     />
