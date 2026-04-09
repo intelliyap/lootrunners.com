@@ -48,6 +48,8 @@ export function Window({ id }: { id: string }) {
         [styles.windowMinimize]: isMinimizing,
       })}
       id={id}
+      onMouseDown={() => setFocusedWindow(id)}
+      onTouchStart={() => setFocusedWindow(id)}
       style={{
         position: "absolute",
         top: 0,
@@ -175,7 +177,19 @@ export function Window({ id }: { id: string }) {
             </div>
           </div>
         )}
-        <div style={{ flex: 1, display: state.loading ? "none" : "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, display: state.loading ? "none" : "flex", flexDirection: "column", position: "relative" }}>
+          {focusedWindow !== id && state.program.type === "iframe" && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 1,
+                cursor: "default",
+              }}
+              onMouseDown={() => setFocusedWindow(id)}
+              onTouchStart={() => setFocusedWindow(id)}
+            />
+          )}
           <WindowBody state={state} />
         </div>
       </div>
