@@ -49,7 +49,21 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   const desc = url.searchParams.get("description");
-  const keys = JSON.parse(url.searchParams.get("keys") ?? "[]");
+  let keys: string[];
+  try {
+    const parsed = JSON.parse(url.searchParams.get("keys") ?? "[]");
+    if (!Array.isArray(parsed) || !parsed.every((k: unknown) => typeof k === "string")) {
+      return new Response("Invalid keys parameter", { status: 400 });
+    }
+    // Validate each key matches allowed characters
+    const keyPattern = /^[a-zA-Z0-9_-]+$/;
+    if (!parsed.every((k: string) => keyPattern.test(k))) {
+      return new Response("Invalid key format", { status: 400 });
+    }
+    keys = parsed;
+  } catch {
+    return new Response("Invalid keys parameter", { status: 400 });
+  }
   if (!desc) {
     return new Response("No description", {
       status: 404,

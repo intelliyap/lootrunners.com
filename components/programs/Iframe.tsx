@@ -83,6 +83,10 @@ function IframeInner({ id }: { id: string }) {
       if (event.source !== ref.current?.contentWindow) {
         return;
       }
+      // Validate origin for non-srcDoc iframes (srcDoc has origin "null")
+      if (event.origin !== "null" && event.origin !== window.location.origin) {
+        return;
+      }
 
       // Assuming the message contains the operation type and key-value data
       const { operation, key, value, id, returnJson } = event.data;

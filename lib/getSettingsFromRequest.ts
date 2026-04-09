@@ -8,7 +8,14 @@ export async function getSettingsFromGetRequest(
   const settingsParam = url.searchParams.get("settings");
   if (settingsParam) {
     try {
-      return JSON.parse(decodeURIComponent(settingsParam));
+      const parsed = JSON.parse(decodeURIComponent(settingsParam));
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        return { apiKey: null };
+      }
+      return {
+        apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey : null,
+        model: parsed.model === "cheap" ? "cheap" : "best",
+      };
     } catch (error) {
       console.error("Error parsing settings from query string:", error);
       return { apiKey: null };
