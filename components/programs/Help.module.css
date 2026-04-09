@@ -35,17 +35,37 @@
 .chatInput {
   display: flex;
   margin-top: 10px;
+  padding: 0 10px 10px;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
 .chatInput input {
   flex: 1;
   padding: 5px;
   border: 1px solid #000;
+  min-width: 0;
 }
 
 .chatInput button {
-  margin-left: 5px;
   padding: 5px 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .chatInput input {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .chatInput button {
+    padding: 10px 16px;
+    min-height: 44px;
+  }
+
+  .chatMessage {
+    font-size: 14px;
+  }
 }
 
 .loadingIndicator {
