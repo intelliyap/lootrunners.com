@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     }
 
     if (!settings.apiKey) {
-      const client = createClient();
+      const client = await createClient();
       const hasTokens = await canGenerate(client, user);
 
       if (!hasTokens) {

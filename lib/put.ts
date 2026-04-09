@@ -11,7 +11,7 @@ export async function put(path: string, blob: Blob): Promise<string> {
 
     return `http://localhost:3000/blob/${path}`;
   }
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.storage.from("icons").upload(path, blob);
 

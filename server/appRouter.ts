@@ -12,7 +12,7 @@ export const appRouter = router({
         tokens: 1000,
       };
     }
-    const client = createClient();
+    const client = await createClient();
     const user = await getUser();
     if (!user) {
       throw new TRPCError({

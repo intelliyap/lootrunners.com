@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function login() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const url = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`;
 
@@ -29,7 +29,7 @@ export async function login() {
 }
 
 export async function logout() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   await supabase.auth.signOut();
   revalidatePath("/", "layout");

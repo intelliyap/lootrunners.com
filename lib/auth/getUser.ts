@@ -6,7 +6,7 @@ export async function getUser(): Promise<User | null> {
   if (isLocal()) {
     return null;
   }
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
