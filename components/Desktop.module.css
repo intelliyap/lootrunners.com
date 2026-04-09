@@ -14,13 +14,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 2px;
-  border: none;
+  border: 1px dotted transparent;
   background: none;
   cursor: pointer;
   box-shadow: none !important;
   gap: 4px;
   transition: transform 100ms ease;
+  padding: 4px;
 
   &:hover {
     transform: scale(1.05);
@@ -37,6 +37,20 @@
   }
 }
 
+.programIcon.selected {
+  border: 1px dotted #000;
+
+  & img {
+    filter: brightness(0.8) saturate(1.5);
+    mix-blend-mode: multiply;
+  }
+}
+
+.programIcon.selected .programName {
+  background: #000080;
+  color: #fff;
+}
+
 .programName {
   font-size: 12px;
   color: #000;
@@ -45,6 +59,7 @@
   width: 100%;
   text-align: center;
   overflow: hidden;
+  padding: 1px 2px;
 }
 
 @media (max-width: 768px) {
