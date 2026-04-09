@@ -6,8 +6,11 @@ import { capture } from "@/lib/capture";
 import { getSettingsFromJSON } from "@/lib/getSettingsFromRequest";
 import { isLocal } from "@/lib/isLocal";
 import { log } from "@/lib/log";
+import { checkAccess } from "@/lib/apiGuard";
 
 export async function POST(req: Request) {
+  const denied = await checkAccess(req, "chat");
+  if (denied) return denied;
   const body = await req.json();
   const settings = await getSettingsFromJSON(body);
   const user = await getUser();

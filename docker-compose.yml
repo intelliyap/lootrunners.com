@@ -3,6 +3,11 @@ services:
     image: dddd4444/lootrunners:latest
     container_name: lootrunners
     restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://lootrunners:${POSTGRES_PASSWORD}@lootrunners-db:5432/lootrunners
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NEXT_PUBLIC_LOCAL_MODE=true
+      - ACCESS_CODE=${ACCESS_CODE}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.lootrunners.rule=Host(`lootrunners.com`) || Host(`www.lootrunners.com`)"
@@ -12,6 +17,30 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - proxy
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: lootrunners-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=lootrunners
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=lootrunners
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - proxy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lootrunners"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
 
 networks:
   proxy:

@@ -20,6 +20,11 @@
   cursor: pointer;
   box-shadow: none !important;
   gap: 4px;
+  transition: transform 100ms ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 
   &:active {
     font-weight: normal;

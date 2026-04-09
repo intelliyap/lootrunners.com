@@ -11,8 +11,11 @@ import { canGenerate } from "@/server/usage/canGenerate";
 import { Settings } from "@/state/settings";
 import { User } from "@supabase/supabase-js";
 import { createPaymentRequiredResponse } from "@/server/paymentRequiredResponse";
+import { checkAccess } from "@/lib/apiGuard";
 
 export async function POST(req: Request) {
+  const denied = await checkAccess(req, "icon");
+  if (denied) return denied;
   const user = await getUser();
   if (!isLocal()) {
     if (!user) {
