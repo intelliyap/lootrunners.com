@@ -75,9 +75,12 @@ function MenuBarButton({
     };
   }, [closeMenu]);
 
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   return (
     <div className={styles.menuBarButtonContainer} ref={ref}>
       <button
+        ref={buttonRef}
         className={cx(styles.menuBarButton, {
           [styles.isOpen]: openMenuLabel === optionGroup.label,
         })}
@@ -89,8 +92,12 @@ function MenuBarButton({
       >
         {optionGroup.label}
       </button>
-      {openMenuLabel === optionGroup.label && (
-        <MenuBarDropdown optionGroup={optionGroup} closeMenu={closeMenu} />
+      {openMenuLabel === optionGroup.label && buttonRef.current && (
+        <MenuBarDropdown
+          optionGroup={optionGroup}
+          closeMenu={closeMenu}
+          anchorRect={buttonRef.current.getBoundingClientRect()}
+        />
       )}
     </div>
   );
@@ -99,12 +106,21 @@ function MenuBarButton({
 function MenuBarDropdown({
   optionGroup,
   closeMenu,
+  anchorRect,
 }: {
   optionGroup: OptionGroup;
   closeMenu: () => void;
+  anchorRect: DOMRect;
 }) {
   return (
-    <div className={cx(styles.menuBarDropdown, "window")}>
+    <div
+      className={cx(styles.menuBarDropdown, "window")}
+      style={{
+        position: "fixed",
+        top: anchorRect.bottom,
+        left: anchorRect.left,
+      }}
+    >
       {optionGroup.items.map(
         (item) =>
           item && (
