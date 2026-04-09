@@ -8,7 +8,6 @@ import {
   ChatCompletion,
   ChatCompletionCreateParamsStreaming,
 } from "openai/resources/index.mjs";
-import { traced } from "braintrust";
 import { User } from "@supabase/supabase-js";
 import {
   ChatCompletionChunk,
@@ -46,30 +45,15 @@ export async function createCompletion({
   body: NonStreamingParams | StreamingParams;
   user: User | null;
 }): Promise<ChatCompletion | Stream<ChatCompletionChunk>> {
-  return await traced(async (span) => {
-    const { client, preferredModel, mode } = createClientFromSettings(settings);
-    span.log({
-      metadata: {
-        label,
-        userID: user?.id,
-      },
-    });
-    const model =
-      forceModel === "cheap"
-        ? getCheapestModel(mode)
-        : forceModel === "best"
-        ? getBestModel(mode)
-        : preferredModel;
-    return await client.chat.completions.create(
-      {
-        ...body,
-        model,
-      },
-      {
-        headers: {
-          "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
-        },
-      }
-    );
+  const { client, preferredModel, mode } = createClientFromSettings(settings);
+  const model =
+    forceModel === "cheap"
+      ? getCheapestModel(mode)
+      : forceModel === "best"
+      ? getBestModel(mode)
+      : preferredModel;
+  return await client.chat.completions.create({
+    ...body,
+    model,
   });
 }
