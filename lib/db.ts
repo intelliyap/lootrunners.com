@@ -11,6 +11,12 @@ function getPool(): pg.Pool | null {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    });
+    pool.on("error", (err) => {
+      console.error("Unexpected pool error:", err);
     });
   }
   return pool;
@@ -32,7 +38,7 @@ async function ensureTables() {
   await p.query(`
     CREATE TABLE IF NOT EXISTS generations (
       id SERIAL PRIMARY KEY,
-      session_id TEXT REFERENCES sessions(id),
+      session_id TEXT REFERENCES sessions(id) ON DELETE CASCADE,
       endpoint TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
     );
@@ -40,7 +46,7 @@ async function ensureTables() {
   await p.query(`
     CREATE TABLE IF NOT EXISTS programs (
       id TEXT NOT NULL,
-      session_id TEXT REFERENCES sessions(id),
+      session_id TEXT REFERENCES sessions(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       prompt TEXT NOT NULL,
       code TEXT,
@@ -50,13 +56,44 @@ async function ensureTables() {
     );
   `);
 
+  await p.query(`
+    CREATE INDEX IF NOT EXISTS idx_sessions_created ON sessions(created_at);
+  `);
+  await p.query(`
+    CREATE INDEX IF NOT EXISTS idx_generations_session_created ON generations(session_id, created_at DESC);
+  `);
+
   initialized = true;
+}
+
+// Run cleanup on startup and every 6 hours
+let cleanupScheduled = false;
+
+async function scheduleCleanup() {
+  if (cleanupScheduled) return;
+  cleanupScheduled = true;
+  await runCleanup();
+  setInterval(runCleanup, 6 * 60 * 60 * 1000);
+}
+
+async function runCleanup() {
+  const p = getPool();
+  if (!p) return;
+  try {
+    // Delete sessions older than 90 days (cascades to generations + programs)
+    await p.query(`DELETE FROM sessions WHERE created_at < NOW() - INTERVAL '90 days'`);
+    // Delete generations older than 7 days (rate limit only needs 1 hour, keep 7 days for analytics)
+    await p.query(`DELETE FROM generations WHERE created_at < NOW() - INTERVAL '7 days'`);
+  } catch (err) {
+    console.error("Cleanup error:", err);
+  }
 }
 
 export async function query(text: string, params?: unknown[]) {
   const p = getPool();
   if (!p) return null;
   await ensureTables();
+  await scheduleCleanup();
   return p.query(text, params);
 }
 
