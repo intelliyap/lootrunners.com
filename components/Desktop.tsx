@@ -8,11 +8,12 @@ import { useCreateContextMenu } from "@/state/contextMenu";
 import { useServerPrograms } from "@/lib/useServerPrograms";
 import { useEffect, useRef, useState, useCallback } from "react";
 import cx from "classnames";
+import { isMobile } from "@/lib/isMobile";
 
 const GRID = 96;
 const GRID_MOBILE = 88;
 const PADDING = 12;
-const DRAG_THRESHOLD = 5;
+const DRAG_THRESHOLD = 8;
 const DOUBLE_CLICK_MS = 400;
 
 function getGridSize() {
@@ -70,6 +71,7 @@ export const Desktop = () => {
   const didSync = useRef(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [iconPositions, setIconPositions] = useState<IconPositions>({});
+  const [mobile] = useState(() => isMobile());
 
   useEffect(() => {
     if (didSync.current) return;
@@ -113,6 +115,7 @@ export const Desktop = () => {
           onSelect={() => setSelectedIcon(program.id)}
           position={iconPositions[program.id] || { col: 0, row: 0 }}
           onMove={(col, row) => moveIcon(program.id, col, row)}
+          mobile={mobile}
         />
       ))}
     </div>
@@ -125,12 +128,14 @@ function ProgramIcon({
   onSelect,
   position,
   onMove: onMoveIcon,
+  mobile,
 }: {
   program: ProgramEntry;
   isSelected: boolean;
   onSelect: () => void;
   position: IconPosition;
   onMove: (col: number, row: number) => void;
+  mobile: boolean;
 }) {
   const createContextMenu = useCreateContextMenu();
   const dispatch = useSetAtom(programsAtom);
@@ -141,7 +146,6 @@ function ProgramIcon({
   const isDraggingRef = useRef(false);
   const cleanupRef = useRef<(() => void) | null>(null);
 
-  // Clean up any leftover drag on unmount
   useEffect(() => {
     return () => { cleanupRef.current?.(); };
   }, []);
@@ -158,17 +162,23 @@ function ProgramIcon({
     e.stopPropagation();
     if (isDraggingRef.current) return;
 
-    const now = Date.now();
-    if (now - lastClickRef.current < DOUBLE_CLICK_MS) {
+    if (mobile) {
+      // Mobile: single tap opens
       runProgram();
-      lastClickRef.current = 0;
     } else {
-      onSelect();
-      lastClickRef.current = now;
+      // Desktop: double-click opens, single click selects
+      const now = Date.now();
+      if (now - lastClickRef.current < DOUBLE_CLICK_MS) {
+        runProgram();
+        lastClickRef.current = 0;
+      } else {
+        onSelect();
+        lastClickRef.current = now;
+      }
     }
   };
 
-  const startDrag = (startX: number, startY: number) => {
+  const startDrag = (startX: number, startY: number, isTouch: boolean) => {
     const gridSize = getGridSize();
     const origin = gridToPixels(position.col, position.row, gridSize);
     isDraggingRef.current = false;
@@ -190,41 +200,52 @@ function ProgramIcon({
 
     const onEnd = (endX: number, endY: number) => {
       cleanup();
-
       if (isDraggingRef.current) {
         const dx = endX - startX;
         const dy = endY - startY;
         const snapped = snapToGrid(origin.x + dx, origin.y + dy, gridSize);
         onMoveIcon(snapped.col, snapped.row);
       }
-
       setDragging(false);
       setDragOffset(null);
-      // Delay clearing so click handler sees isDraggingRef
       setTimeout(() => { isDraggingRef.current = false; }, 50);
     };
 
-    const onMouseMove = (e: MouseEvent) => onPointerMove(e.clientX, e.clientY);
-    const onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
-    const onBlur = () => {
-      // Mouse left window — cancel drag, snap back
+    const cancel = () => {
       cleanup();
       setDragging(false);
       setDragOffset(null);
       isDraggingRef.current = false;
     };
 
+    let onMouseMove: ((e: MouseEvent) => void) | null = null;
+    let onMouseUp: ((e: MouseEvent) => void) | null = null;
+    let onTouchMoveHandler: ((e: TouchEvent) => void) | null = null;
+    let onTouchEndHandler: ((e: TouchEvent) => void) | null = null;
+
     const cleanup = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("blur", onBlur);
+      if (onMouseMove) window.removeEventListener("mousemove", onMouseMove);
+      if (onMouseUp) window.removeEventListener("mouseup", onMouseUp);
+      if (onTouchMoveHandler) window.removeEventListener("touchmove", onTouchMoveHandler);
+      if (onTouchEndHandler) window.removeEventListener("touchend", onTouchEndHandler);
+      window.removeEventListener("blur", cancel);
       cleanupRef.current = null;
     };
 
     cleanupRef.current = cleanup;
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("blur", onBlur);
+    window.addEventListener("blur", cancel);
+
+    if (isTouch) {
+      onTouchMoveHandler = (e: TouchEvent) => onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      onTouchEndHandler = (e: TouchEvent) => onEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+      window.addEventListener("touchmove", onTouchMoveHandler);
+      window.addEventListener("touchend", onTouchEndHandler);
+    } else {
+      onMouseMove = (e: MouseEvent) => onPointerMove(e.clientX, e.clientY);
+      onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    }
   };
 
   const gridSize = getGridSize();
@@ -262,10 +283,17 @@ function ProgramIcon({
       onMouseDown={(e) => {
         if (e.button === 0) {
           e.preventDefault();
-          startDrag(e.clientX, e.clientY);
+          startDrag(e.clientX, e.clientY, false);
         }
       }}
-      onTouchStart={contextMenuHandlers.onTouchStart}
+      onTouchStart={(e) => {
+        // Start drag tracking on touch — context menu long-press
+        // will still work because drag only activates after movement
+        const touch = e.touches[0];
+        startDrag(touch.clientX, touch.clientY, true);
+        // Also let context menu handler track for long-press
+        contextMenuHandlers.onTouchStart?.(e);
+      }}
       onTouchEnd={contextMenuHandlers.onTouchEnd}
       onTouchMove={contextMenuHandlers.onTouchMove}
     >
