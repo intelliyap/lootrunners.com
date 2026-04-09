@@ -8,7 +8,7 @@ import done from "./assets/done.png";
 import installer from "./assets/installer.png";
 import notes from "./assets/notes.png";
 import restart from "./assets/restart.png";
-import sawyersoft from "./assets/sawyersoft.png";
+import lootrunners from "../../public/lootrunners.png";
 import banner from "./assets/banner.png";
 
 import Image, { StaticImageData } from "next/image";
@@ -57,17 +57,17 @@ export const Landing = () => {
   return (
     <div className={styles.container}>
       <div className={styles.headingBar}>
-        <h1>Windows 9X Setup</h1>
+        <h1>Lootrunners Setup</h1>
       </div>
       <div className={styles.columns}>
         <div className={cx(styles.column, styles.sidebar)}>
           <div className={styles.steps}>
-            <Step iconSrc={installer}>Preparing to run Windows 9X Setup</Step>
+            <Step iconSrc={installer}>Preparing to run Lootrunners Setup</Step>
             <Step iconSrc={notes} isHighlighted>
               Collecting information about your computer
             </Step>
             <Step iconSrc={copy}>
-              Copying Windows 9X files to your computer
+              Copying Lootrunners files to your computer
             </Step>
             <Step iconSrc={restart}>Restarting your computer</Step>
             <Step iconSrc={done}>
@@ -90,13 +90,13 @@ export const Landing = () => {
             </div>
           </div>
           <div className="info-box">
-            If you decide not to accept the Agreement, Windows 9X Setup will
+            If you decide not to accept the Agreement, Lootrunners Setup will
             quit and your computer will return to the previous environment.
           </div>
           <Image
-            src={sawyersoft}
+            src={lootrunners}
             className={styles.logo}
-            alt="Sawyer Software Logo"
+            alt="Lootrunners Logo"
           />
         </div>
         <div className={styles.main}>{isLive ? <Login /> : <WaitList />}</div>
@@ -141,17 +141,17 @@ function Login() {
       </div>
       <div className="window-body">
         <div className={styles.imgContainer}>
-          <Image src={banner} alt="Windows 9X" />
+          <Image src={banner} alt="Lootrunners" />
         </div>
         <div className={styles.copy}>
-          <h2>Welcome to Windows 9X</h2>
+          <h2>Welcome to Lootrunners</h2>
           <p>
-            Windows 9X is a simulacrum of an OS from the 90s but all
+            Lootrunners is a simulacrum of an OS from the 90s but all
             applications are generated using <b>AI</b>.
           </p>
           <p>
-            Windows 9X leverages cutting-edge artificial intelligence
-            technology, <b>SawyerSoft IntelliOptimize™</b>, to optimize user
+            Lootrunners leverages cutting-edge artificial intelligence
+            technology, <b>Lootrunners AI Engine™</b>, to optimize user
             experience and drive unparalleled operational efficiency.
           </p>
           <p>
@@ -171,7 +171,7 @@ function WaitList() {
   return (
     <div className="window">
       <div className="title-bar">
-        <div className="title-bar-text">Windows 9x Waitlist</div>
+        <div className="title-bar-text">Lootrunners Waitlist</div>
         <div className="title-bar-controls">
           <button aria-label="Minimize"></button>
           <button aria-label="Maximize"></button>
@@ -180,17 +180,17 @@ function WaitList() {
       </div>
       <div className="window-body">
         <div className={styles.imgContainer}>
-          <Image src={banner} alt="Windows 9X" />
+          <Image src={banner} alt="Lootrunners" />
         </div>
         <div className={styles.copy}>
-          <h2>Coming Soon: Windows 9X</h2>
+          <h2>Coming Soon: Lootrunners</h2>
           <p>
-            Windows 9X is a simulacrum of an OS from the 90s but all
+            Lootrunners is a simulacrum of an OS from the 90s but all
             applications are generated using <b>AI</b>.
           </p>
           <p>
-            Windows 9X leverages cutting-edge artificial intelligence
-            technology, <b>SawyerSoft IntelliOptimize™</b>, to optimize user
+            Lootrunners leverages cutting-edge artificial intelligence
+            technology, <b>Lootrunners AI Engine™</b>, to optimize user
             experience and drive unparalleled operational efficiency.
           </p>
           <p>
@@ -199,10 +199,10 @@ function WaitList() {
           </p>
           <p>
             You can follow development progress{" "}
-            <a href="https://x.com/sawyerhood">here</a>.
+            <a href="https://lootrunners.com">here</a>.
           </p>
           <p>
-            Sign up to be notified when <b>Windows 9x</b> is available:
+            Sign up to be notified when <b>Lootrunners</b> is available:
           </p>
           <Form action={signUp}></Form>
         </div>

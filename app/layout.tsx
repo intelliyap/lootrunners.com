@@ -8,8 +8,8 @@ import { APIProvider } from "@/lib/api/APIProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Windows 9X",
-  description: "The future of yesterday",
+  title: "Lootrunners",
+  description: "Run the loot",
 };
 
 export default function RootLayout({
