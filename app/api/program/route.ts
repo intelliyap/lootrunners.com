@@ -16,8 +16,12 @@ import { isLocal } from "@/lib/isLocal";
 import { createCompletion } from "@/ai/createCompletion";
 import { User } from "@supabase/supabase-js";
 import { getMaxTokens } from "@/ai/getMaxTokens";
+import { checkAccess } from "@/lib/apiGuard";
 
 export async function GET(req: Request) {
+  const denied = await checkAccess(req, "program");
+  if (denied) return denied;
+
   const settings = await getSettingsFromGetRequest(req);
   const user = await getUser();
   if (!isLocal() && settings.model !== "cheap") {

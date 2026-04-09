@@ -10,8 +10,11 @@ import { createClient } from "@/lib/supabase/server";
 import { canGenerate } from "@/server/usage/canGenerate";
 import { insertGeneration } from "@/server/usage/insertGeneration";
 import { createPaymentRequiredResponse } from "@/server/paymentRequiredResponse";
+import { checkAccess } from "@/lib/apiGuard";
 
 export async function POST(req: Request) {
+  const denied = await checkAccess(req, "help");
+  if (denied) return denied;
   const body = await req.json();
   const settings = await getSettingsFromJSON(body);
   const user = await getUser();

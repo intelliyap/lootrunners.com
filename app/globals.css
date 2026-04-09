@@ -11,6 +11,7 @@ body {
   user-select: none;
   font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
   touch-action: none;
+  animation: bodyFadeIn 300ms ease-out both;
 
   & .title-bar,
   & .window,
@@ -23,6 +24,15 @@ body {
   & textarea,
   & ul.tree-view {
     -webkit-font-smoothing: inherit !important;
+  }
+}
+
+@keyframes bodyFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

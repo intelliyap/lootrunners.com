@@ -7,8 +7,11 @@ import { getSettingsFromJSON } from "@/lib/getSettingsFromRequest";
 import { isLocal } from "@/lib/isLocal";
 
 import { log } from "@/lib/log";
+import { checkAccess } from "@/lib/apiGuard";
 
 export async function POST(req: Request) {
+  const denied = await checkAccess(req, "name");
+  if (denied) return denied;
   const user = await getUser();
   if (!isLocal()) {
     if (!user) {

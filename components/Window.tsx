@@ -13,7 +13,7 @@ import { windowsListAtom } from "@/state/windowsList";
 import { MIN_WINDOW_SIZE, windowAtomFamily } from "@/state/window";
 import { WindowBody } from "./WindowBody";
 import styles from "./Window.module.css";
-import { MouseEventHandler, TouchEventHandler } from "react";
+import { MouseEventHandler, TouchEventHandler, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { createWindow } from "@/lib/createWindow";
 import { WindowMenuBar } from "./WindowMenuBar";
@@ -25,11 +25,26 @@ export function Window({ id }: { id: string }) {
   const windowsDispatch = useSetAtom(windowsListAtom);
   const [focusedWindow, setFocusedWindow] = useAtom(focusedWindowAtom);
   const isResizing = useAtomValue(isResizingAtom);
+  const [isMinimizing, setIsMinimizing] = useState(false);
+  const prevStatusRef = useRef(state.status);
+
+  useEffect(() => {
+    if (prevStatusRef.current !== "minimized" && state.status === "minimized") {
+      setIsMinimizing(true);
+      const timer = setTimeout(() => setIsMinimizing(false), 100);
+      return () => clearTimeout(timer);
+    }
+    prevStatusRef.current = state.status;
+  }, [state.status]);
+
+  const isHidden = state.status === "minimized" && !isMinimizing;
 
   return (
     <div
       className={cx("window", {
         [styles.jiggle]: state.loading,
+        [styles.windowOpen]: state.status !== "minimized" && !isMinimizing,
+        [styles.windowMinimize]: isMinimizing,
       })}
       id={id}
       style={{
@@ -49,7 +64,7 @@ export function Window({ id }: { id: string }) {
           state.status === "maximized"
             ? "none"
             : `translate(${state.pos.x}px, ${state.pos.y}px)`,
-        display: state.status === "minimized" ? "none" : "flex",
+        display: isHidden ? "none" : "flex",
         flexDirection: "column",
         zIndex: focusedWindow === id ? 1 : 0,
         isolation: "isolate",
