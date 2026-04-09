@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from "./Welcome.module.css";
-import lootrunners from "../../public/lootrunners.png";
+import lootrunners from "../../public/lootrunners-website.png";
 import check from "@/components/assets/check.png";
 import { SettingsLink } from "../SettingsLink";
 import history from "./updateAssets/history.png";
