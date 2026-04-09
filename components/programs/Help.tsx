@@ -18,6 +18,7 @@ import { getSettings } from "@/lib/getSettings";
 import styles from "./Help.module.css";
 import imageIcon from "@/components/assets/image.png";
 import wrappedFetch from "@/lib/wrappedFetch";
+import { AccessCodePrompt } from "../AccessCodePrompt";
 
 type Message = {
   role: string;
@@ -233,10 +234,15 @@ export function Help({ id }: { id: string }) {
         )}
       </div>
       {needsAuth ? (
-        <AccessCodeInline onSuccess={() => {
-          setNeedsAuth(false);
-          setIsLoading(false);
-        }} />
+        <div style={{ padding: "0 10px 10px" }}>
+          <AccessCodePrompt
+            message="Session expired. Enter access code to continue:"
+            onSuccess={() => {
+              setNeedsAuth(false);
+              setIsLoading(false);
+            }}
+          />
+        </div>
       ) : (
       <div className={styles.chatInput}>
         <div
@@ -322,53 +328,3 @@ const Message = ({ msg }: { msg: Message }) => {
   );
 };
 
-function AccessCodeInline({ onSuccess }: { onSuccess: () => void }) {
-  const [code, setCode] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-      if (res.ok) {
-        onSuccess();
-      } else {
-        setError("Invalid code");
-      }
-    } catch {
-      setError("Connection error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className={styles.chatInput} style={{ flexDirection: "column", gap: 6 }}>
-      <div style={{ fontSize: 12, color: "#333" }}>
-        Session expired. Enter access code to continue:
-      </div>
-      <form onSubmit={handleSubmit} style={{ display: "flex", gap: 5 }}>
-        <input
-          type="password"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          autoFocus
-          disabled={loading}
-          placeholder="Access code"
-          style={{ flex: 1 }}
-        />
-        <button type="submit" disabled={loading || !code}>
-          {loading ? "..." : "OK"}
-        </button>
-      </form>
-      {error && <div style={{ color: "red", fontSize: 11 }}>{error}</div>}
-    </div>
-  );
-}
