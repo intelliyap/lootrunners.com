@@ -264,6 +264,8 @@ export function Welcome({ id: _id }: { id: string }) {
         src={lootrunners}
         alt="Lootrunners Logo"
         className={styles.logo}
+        width={400}
+        height={44}
       />
       <div className={styles.contentWrapper}>
         <TableOfContents
