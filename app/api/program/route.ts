@@ -55,6 +55,9 @@ export async function GET(req: Request) {
       status: 404,
     });
   }
+  if (desc.length > 2000) {
+    return new Response("Description too long", { status: 400 });
+  }
 
   const programStream = await createProgramStream({
     desc,
@@ -128,6 +131,11 @@ async function createProgramStream({
     req
   );
 
+  // Sanitize user input to prevent prompt injection via XML tags
+  const sanitizedDesc = desc
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
   const stream = createStreamingCompletion({
     settings,
     body: {
@@ -138,7 +146,7 @@ async function createProgramStream({
         },
         {
           role: "user",
-          content: `<app_name>${desc}</app_name>`,
+          content: `<app_name>${sanitizedDesc}</app_name>`,
         },
       ],
       temperature: 1,

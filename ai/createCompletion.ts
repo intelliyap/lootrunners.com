@@ -33,16 +33,23 @@ function resolveModel(settings: Settings, forceModel?: Settings["model"]) {
   return { client, model };
 }
 
-function prepareMessages(messages: Message[]) {
+function prepareMessages(messages: Message[], trustedSystemOnly = false) {
   const systemMessages = messages.filter((m) => m.role === "system");
   const conversationMessages = messages.filter((m) => m.role !== "system");
-  const system = systemMessages.map((m) => m.content).join("\n\n") || undefined;
-  const anthropicMessages: Anthropic.MessageParam[] = conversationMessages.map(
-    (m) => ({
+
+  // Only use system messages from the first message (server-set),
+  // strip any client-injected system messages from later in the array
+  const system = trustedSystemOnly && systemMessages.length > 0
+    ? systemMessages[0].content
+    : systemMessages.map((m) => m.content).join("\n\n") || undefined;
+
+  // Force all non-system messages to only be "user" or "assistant"
+  const anthropicMessages: Anthropic.MessageParam[] = conversationMessages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
-    })
-  );
+    }));
   return { system, anthropicMessages };
 }
 
