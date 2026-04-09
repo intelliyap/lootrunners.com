@@ -12,6 +12,8 @@ import cx from "classnames";
 const GRID = 96;
 const GRID_MOBILE = 88;
 const PADDING = 12;
+const DRAG_THRESHOLD = 5;
+const DOUBLE_CLICK_MS = 400;
 
 function getGridSize() {
   if (typeof window === "undefined") return GRID;
@@ -40,14 +42,12 @@ function getDefaultPositions(programs: ProgramEntry[], existing: IconPositions):
   const occupied = new Set(
     Object.values(positions).map((p) => `${p.col},${p.row}`)
   );
-
   const maxRows = typeof window !== "undefined"
     ? Math.floor((window.innerHeight - 80) / getGridSize())
     : 6;
 
   for (const program of programs) {
     if (positions[program.id]) continue;
-    // Find next free slot (column-first like Win98)
     let placed = false;
     for (let col = 0; col < 20 && !placed; col++) {
       for (let row = 0; row < maxRows && !placed; row++) {
@@ -95,23 +95,16 @@ export const Desktop = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Assign default positions to any new icons
   useEffect(() => {
     setIconPositions((prev) => getDefaultPositions(programs, prev));
   }, [programs]);
 
   const moveIcon = useCallback((id: string, col: number, row: number) => {
-    setIconPositions((prev) => ({
-      ...prev,
-      [id]: { col, row },
-    }));
+    setIconPositions((prev) => ({ ...prev, [id]: { col, row } }));
   }, []);
 
   return (
-    <div
-      className={styles.desktop}
-      onClick={() => setSelectedIcon(null)}
-    >
+    <div className={styles.desktop} onClick={() => setSelectedIcon(null)}>
       {programs.map((program) => (
         <ProgramIcon
           key={program.name}
@@ -131,7 +124,7 @@ function ProgramIcon({
   isSelected,
   onSelect,
   position,
-  onMove,
+  onMove: onMoveIcon,
 }: {
   program: ProgramEntry;
   isSelected: boolean;
@@ -144,27 +137,29 @@ function ProgramIcon({
   const { deleteProgram } = useServerPrograms();
   const lastClickRef = useRef(0);
   const [dragging, setDragging] = useState(false);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const dragStartRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  // Clean up any leftover drag on unmount
+  useEffect(() => {
+    return () => { cleanupRef.current?.(); };
+  }, []);
 
   const runProgram = useCallback(() => {
     createWindow({
       title: program.name,
-      program: {
-        type: "iframe",
-        programID: program.id,
-      },
+      program: { type: "iframe", programID: program.id },
       icon: program.icon ?? undefined,
     });
   }, [program]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Don't count as click if we just finished dragging
-    if (dragStartRef.current?.moved) return;
+    if (isDraggingRef.current) return;
 
     const now = Date.now();
-    if (now - lastClickRef.current < 400) {
+    if (now - lastClickRef.current < DOUBLE_CLICK_MS) {
       runProgram();
       lastClickRef.current = 0;
     } else {
@@ -173,73 +168,81 @@ function ProgramIcon({
     }
   };
 
-  const handleDragStart = (clientX: number, clientY: number) => {
-    dragStartRef.current = { x: clientX, y: clientY, moved: false };
+  const startDrag = (startX: number, startY: number) => {
     const gridSize = getGridSize();
-    const pos = gridToPixels(position.col, position.row, gridSize);
-    setDragPos(pos);
+    const origin = gridToPixels(position.col, position.row, gridSize);
+    isDraggingRef.current = false;
 
-    const handleDragMove = (moveX: number, moveY: number) => {
-      if (!dragStartRef.current) return;
-      const dx = moveX - dragStartRef.current.x;
-      const dy = moveY - dragStartRef.current.y;
+    const onPointerMove = (moveX: number, moveY: number) => {
+      const dx = moveX - startX;
+      const dy = moveY - startY;
 
-      // Only start visual drag after 5px movement
-      if (!dragStartRef.current.moved && Math.abs(dx) + Math.abs(dy) > 5) {
-        dragStartRef.current.moved = true;
+      if (!isDraggingRef.current && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
+        isDraggingRef.current = true;
         setDragging(true);
         onSelect();
       }
 
-      if (dragStartRef.current.moved) {
-        setDragPos({
-          x: pos.x + dx,
-          y: pos.y + dy,
-        });
+      if (isDraggingRef.current) {
+        setDragOffset({ x: dx, y: dy });
       }
     };
 
-    const handleDragEnd = (endX: number, endY: number) => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
+    const onEnd = (endX: number, endY: number) => {
+      cleanup();
 
-      if (dragStartRef.current?.moved) {
-        const dx = endX - dragStartRef.current.x;
-        const dy = endY - dragStartRef.current.y;
-        const newPixelX = pos.x + dx;
-        const newPixelY = pos.y + dy;
-        const snapped = snapToGrid(newPixelX, newPixelY, gridSize);
-        onMove(snapped.col, snapped.row);
+      if (isDraggingRef.current) {
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const snapped = snapToGrid(origin.x + dx, origin.y + dy, gridSize);
+        onMoveIcon(snapped.col, snapped.row);
       }
 
       setDragging(false);
-      setDragPos(null);
-      // Reset moved flag after a tick so click handler can read it
-      setTimeout(() => {
-        if (dragStartRef.current) dragStartRef.current.moved = false;
-      }, 10);
+      setDragOffset(null);
+      // Delay clearing so click handler sees isDraggingRef
+      setTimeout(() => { isDraggingRef.current = false; }, 50);
     };
 
-    const onMouseMove = (e: MouseEvent) => handleDragMove(e.clientX, e.clientY);
-    const onMouseUp = (e: MouseEvent) => handleDragEnd(e.clientX, e.clientY);
-    const onTouchMove = (e: TouchEvent) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
-    const onTouchEnd = (e: TouchEvent) => {
-      const touch = e.changedTouches[0];
-      handleDragEnd(touch.clientX, touch.clientY);
+    const onMouseMove = (e: MouseEvent) => onPointerMove(e.clientX, e.clientY);
+    const onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
+    const onBlur = () => {
+      // Mouse left window — cancel drag, snap back
+      cleanup();
+      setDragging(false);
+      setDragOffset(null);
+      isDraggingRef.current = false;
     };
 
+    const cleanup = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("blur", onBlur);
+      cleanupRef.current = null;
+    };
+
+    cleanupRef.current = cleanup;
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("touchmove", onTouchMove);
-    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("blur", onBlur);
   };
 
   const gridSize = getGridSize();
-  const pixelPos = dragging && dragPos
-    ? dragPos
-    : gridToPixels(position.col, position.row, gridSize);
+  const basePos = gridToPixels(position.col, position.row, gridSize);
+  const pixelPos = dragging && dragOffset
+    ? { x: basePos.x + dragOffset.x, y: basePos.y + dragOffset.y }
+    : basePos;
+
+  const contextMenuHandlers = createContextMenu([
+    { label: "Run", onClick: runProgram },
+    {
+      label: "Delete",
+      onClick: () => {
+        dispatch({ type: "REMOVE_PROGRAM", payload: program.name });
+        deleteProgram(program.id);
+      },
+    },
+  ]);
 
   return (
     <button
@@ -254,64 +257,17 @@ function ProgramIcon({
         width: gridSize,
         height: gridSize,
       }}
-      {...createContextMenu([
-        { label: "Run", onClick: runProgram },
-        {
-          label: "Delete",
-          onClick: () => {
-            dispatch({
-              type: "REMOVE_PROGRAM",
-              payload: program.name,
-            });
-            deleteProgram(program.id);
-          },
-        },
-      ])}
+      onContextMenu={contextMenuHandlers.onContextMenu}
       onClick={handleClick}
       onMouseDown={(e) => {
-        if (e.button === 0) handleDragStart(e.clientX, e.clientY);
+        if (e.button === 0) {
+          e.preventDefault();
+          startDrag(e.clientX, e.clientY);
+        }
       }}
-      onTouchStart={(e) => {
-        // Don't interfere with context menu long-press
-        // Drag starts on move, not on touch start
-        const touch = e.touches[0];
-        dragStartRef.current = { x: touch.clientX, y: touch.clientY, moved: false };
-        const gSize = getGridSize();
-        const pos = gridToPixels(position.col, position.row, gSize);
-        setDragPos(pos);
-
-        const onTouchMove = (te: TouchEvent) => {
-          const t = te.touches[0];
-          const dx = t.clientX - dragStartRef.current!.x;
-          const dy = t.clientY - dragStartRef.current!.y;
-          if (!dragStartRef.current!.moved && Math.abs(dx) + Math.abs(dy) > 10) {
-            dragStartRef.current!.moved = true;
-            setDragging(true);
-            onSelect();
-          }
-          if (dragStartRef.current!.moved) {
-            setDragPos({ x: pos.x + dx, y: pos.y + dy });
-          }
-        };
-        const onTouchEnd = (te: TouchEvent) => {
-          window.removeEventListener("touchmove", onTouchMove);
-          window.removeEventListener("touchend", onTouchEnd);
-          if (dragStartRef.current?.moved) {
-            const t = te.changedTouches[0];
-            const dx = t.clientX - dragStartRef.current.x;
-            const dy = t.clientY - dragStartRef.current.y;
-            const snapped = snapToGrid(pos.x + dx, pos.y + dy, gSize);
-            onMove(snapped.col, snapped.row);
-          }
-          setDragging(false);
-          setDragPos(null);
-          setTimeout(() => {
-            if (dragStartRef.current) dragStartRef.current.moved = false;
-          }, 10);
-        };
-        window.addEventListener("touchmove", onTouchMove);
-        window.addEventListener("touchend", onTouchEnd);
-      }}
+      onTouchStart={contextMenuHandlers.onTouchStart}
+      onTouchEnd={contextMenuHandlers.onTouchEnd}
+      onTouchMove={contextMenuHandlers.onTouchMove}
     >
       <Image
         unoptimized
@@ -319,6 +275,7 @@ function ProgramIcon({
         alt={program.name}
         width={24}
         height={24}
+        draggable={false}
       />
       <div className={styles.programName}>{program.name}</div>
     </button>
