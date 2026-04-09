@@ -155,6 +155,7 @@ function ProgramIcon({
       title: program.name,
       program: { type: "iframe", programID: program.id },
       icon: program.icon ?? undefined,
+      size: { width: 700, height: 550 },
     });
   }, [program]);
 

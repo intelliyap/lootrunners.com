@@ -145,8 +145,8 @@ export function Run({ id }: { id: string }) {
             },
             loading: true,
             size: {
-              width: 600,
-              height: 500,
+              width: 700,
+              height: 550,
             },
           });
           windowsDispatch({ type: "REMOVE", payload: id });
