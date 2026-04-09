@@ -164,7 +164,7 @@ export function Window({ id }: { id: string }) {
         }}
       >
         <WindowMenuBar id={id} />
-        {state.loading ? (
+        {state.loading && (
           <div className={styles.loadingOverlay}>
             <progress />
             <div className={styles.loadingText}>Generating program...</div>
@@ -174,9 +174,10 @@ export function Window({ id }: { id: string }) {
               </button>
             </div>
           </div>
-        ) : (
-          <WindowBody state={state} />
         )}
+        <div style={{ flex: 1, display: state.loading ? "none" : "flex", flexDirection: "column" }}>
+          <WindowBody state={state} />
+        </div>
       </div>
       {!mobile && (
         <>
