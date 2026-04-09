@@ -34,10 +34,10 @@ export async function createCompletion(params: {
 }): Promise<Stream<ChatCompletionChunk>>;
 export async function createCompletion({
   settings,
-  label,
+  label: _label,
   forceModel,
   body,
-  user,
+  user: _user,
 }: {
   settings: Settings;
   label: string;
