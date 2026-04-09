@@ -40,6 +40,25 @@ export function Window({ id }: { id: string }) {
   }, [state.status]);
 
   const isHidden = state.status === "minimized" && !isMinimizing;
+  const windowRef = useRef<HTMLDivElement>(null);
+
+  // Detect when an iframe inside this window gets focus (click into iframe)
+  useEffect(() => {
+    if (state.program.type !== "iframe") return;
+
+    const onBlur = () => {
+      // When the main window loses focus, check if it went to our iframe
+      setTimeout(() => {
+        const active = document.activeElement;
+        if (active?.tagName === "IFRAME" && windowRef.current?.contains(active)) {
+          setFocusedWindow(id);
+        }
+      }, 0);
+    };
+
+    window.addEventListener("blur", onBlur);
+    return () => window.removeEventListener("blur", onBlur);
+  }, [id, setFocusedWindow, state.program.type]);
 
   return (
     <div
@@ -47,6 +66,7 @@ export function Window({ id }: { id: string }) {
         [styles.windowOpen]: state.status !== "minimized" && !isMinimizing,
         [styles.windowMinimize]: isMinimizing,
       })}
+      ref={windowRef}
       id={id}
       onMouseDown={() => setFocusedWindow(id)}
       onTouchStart={() => setFocusedWindow(id)}
@@ -180,18 +200,6 @@ export function Window({ id }: { id: string }) {
           </div>
         )}
         <div style={{ flex: 1, display: state.loading ? "none" : "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-          {focusedWindow !== id && state.program.type === "iframe" && (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 1,
-                cursor: "default",
-              }}
-              onMouseDown={() => setFocusedWindow(id)}
-              onTouchStart={() => setFocusedWindow(id)}
-            />
-          )}
           <WindowBody state={state} />
         </div>
       </div>
