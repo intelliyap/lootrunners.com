@@ -1,0 +1,97 @@
+.welcomeContainer {
+  position: relative;
+  padding: 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  flex: 1;
+  background-image: url("/welcome.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+}
+
+.contentWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-self: stretch;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.sidebar {
+  width: 200px;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
+    width: 100%;
+    border-right: none;
+  }
+}
+
+.sidebarTitle {
+  font-size: 1rem;
+  background-color: black;
+  color: white;
+  padding: 4px;
+}
+
+.sidebarList {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+
+  & li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    border-left: 4px solid transparent;
+    padding: 4px;
+    border: 1px solid grey;
+    cursor: pointer;
+  }
+}
+
+.selected {
+  font-weight: bold;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.2rem;
+  gap: 20px;
+
+  & ul {
+    padding-left: 20px;
+  }
+}
+
+.logo {
+  position: relative;
+  image-rendering: pixelated;
+  max-width: 180px;
+  object-fit: contain;
+  filter: invert(1);
+  height: 86px;
+  margin-bottom: 12px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}

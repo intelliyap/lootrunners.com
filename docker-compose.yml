@@ -1,0 +1,18 @@
+services:
+  web:
+    image: dddd4444/lootrunners:latest
+    container_name: lootrunners
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lootrunners.rule=Host(`lootrunners.com`) || Host(`www.lootrunners.com`)"
+      - "traefik.http.routers.lootrunners.entrypoints=websecure"
+      - "traefik.http.routers.lootrunners.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lootrunners.loadbalancer.server.port=3000"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
