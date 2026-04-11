@@ -23,6 +23,18 @@ export function createWindow({
   icon?: string;
 }): string {
   const id = generateRandomId();
+  const mobile = isMobile();
+
+  // Clamp size to viewport on mobile (with padding)
+  if (mobile && program.type !== "iframe") {
+    const maxW = window.innerWidth - 16;
+    const maxH = window.innerHeight - 80;
+    size = {
+      width: Math.min(size.width, maxW),
+      height: size.height === "auto" ? "auto" : Math.min(size.height, maxH),
+    };
+  }
+
   const isCentering = !pos;
   pos = pos || {
     x: Math.max(0, Math.floor(window.innerWidth / 2 - size.width / 2)),
@@ -44,7 +56,7 @@ export function createWindow({
       size,
       pos,
       icon,
-      status: isMobile() ? "maximized" : "normal",
+      status: isMobile() && program.type === "iframe" ? "maximized" : "normal",
     },
   });
   getDefaultStore().set(windowsListAtom, { type: "ADD", payload: id });
