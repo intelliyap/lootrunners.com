@@ -14,10 +14,10 @@
 }
 
 .startMenu {
-  position: absolute;
+  position: fixed;
   left: 0;
   bottom: var(--taskbar-height);
-  z-index: 1;
+  z-index: 9999;
   width: 200px;
   display: flex;
   flex-direction: column;
