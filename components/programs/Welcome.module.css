@@ -20,19 +20,20 @@
   flex: 1;
   align-self: stretch;
   gap: 20px;
+  min-height: 0;
 
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: center;
+    gap: 10px;
   }
 }
 
 .sidebar {
   width: 200px;
   overflow-y: auto;
+  flex-shrink: 0;
 
   @media (max-width: 768px) {
-    margin-top: 20px;
     width: 100%;
     border-right: none;
   }
@@ -68,21 +69,28 @@
 
 .mainContent {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   font-size: 1.2rem;
   gap: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   & ul {
     padding-left: 20px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
   }
 }
 
 .logo {
   position: relative;
   image-rendering: pixelated;
-  max-width: 400px;
-  width: 100%;
+  max-width: 100%;
+  width: 400px;
   object-fit: contain;
   height: auto;
   margin-bottom: 16px;
