@@ -4,25 +4,33 @@ import { atomWithStorage } from "jotai/utils";
 import { getOriginPrivateDirectory } from "file-system-access";
 
 async function getDirectoryHandle() {
-  // Check if FileSystemFileHandle has createWritable method
-  const hasCreateWritable =
-    globalThis.FileSystemFileHandle &&
-    "createWritable" in window.FileSystemFileHandle.prototype;
-  let handle: FileSystemDirectoryHandle;
+  try {
+    // Check if FileSystemFileHandle has createWritable method
+    const hasCreateWritable =
+      globalThis.FileSystemFileHandle &&
+      "createWritable" in window.FileSystemFileHandle.prototype;
+    let handle: FileSystemDirectoryHandle;
 
-  if (hasCreateWritable) {
-    handle = (await getOriginPrivateDirectory()) as FileSystemDirectoryHandle;
-  } else if (globalThis.indexedDB) {
-    handle = (await getOriginPrivateDirectory(
-      import("file-system-access/lib/adapters/indexeddb.js")
-    )) as FileSystemDirectoryHandle;
-  } else {
-    handle = (await getOriginPrivateDirectory(
+    if (hasCreateWritable) {
+      handle = (await getOriginPrivateDirectory()) as FileSystemDirectoryHandle;
+    } else if (globalThis.indexedDB) {
+      handle = (await getOriginPrivateDirectory(
+        import("file-system-access/lib/adapters/indexeddb.js")
+      )) as FileSystemDirectoryHandle;
+    } else {
+      handle = (await getOriginPrivateDirectory(
+        import("file-system-access/lib/adapters/memory.js")
+      )) as FileSystemDirectoryHandle;
+    }
+
+    return handle;
+  } catch (e) {
+    console.error("Failed to get directory handle, falling back to memory:", e);
+    // Fallback to in-memory adapter
+    return (await getOriginPrivateDirectory(
       import("file-system-access/lib/adapters/memory.js")
     )) as FileSystemDirectoryHandle;
   }
-
-  return handle;
 }
 
 const DB_NAME = "FileSystemDB";

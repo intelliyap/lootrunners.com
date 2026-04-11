@@ -12,15 +12,19 @@ async function createFsManager(
   mountedDirs: Record<string, FileSystemDirectoryHandle>
 ): Promise<FsManager> {
   const manager = new FsManager(dir, mountedDirs);
-  if (!(await manager.hasSystemData())) {
-    const oldFormat = getOldFormat();
-    if (oldFormat) {
-      for (const [name, item] of Object.entries(oldFormat.items)) {
-        await manager.insert(name, item as DeepFolder | DeepFile);
+  try {
+    if (!(await manager.hasSystemData())) {
+      const oldFormat = getOldFormat();
+      if (oldFormat) {
+        for (const [name, item] of Object.entries(oldFormat.items)) {
+          await manager.insert(name, item as DeepFolder | DeepFile);
+        }
       }
     }
+    await manager.setupDefaultDirectories();
+  } catch (e) {
+    console.error("Failed to initialize filesystem:", e);
   }
-  await manager.setupDefaultDirectories();
   return manager;
 }
 
