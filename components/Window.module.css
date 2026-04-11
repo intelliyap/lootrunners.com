@@ -60,6 +60,7 @@
     min-height: 32px;
   }
   .window :global(.title-bar) {
-    min-height: 36px;
+    min-height: 44px;
+    padding: 0 4px;
   }
 }
