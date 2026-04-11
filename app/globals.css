@@ -10,7 +10,7 @@ body {
   overflow-x: hidden;
   user-select: none;
   font-family: "Pixelated MS Sans Serif", Arial, sans-serif;
-  touch-action: none;
+  touch-action: manipulation;
   animation: bodyFadeIn 300ms ease-out both;
 
   & .title-bar,
