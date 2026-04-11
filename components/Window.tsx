@@ -90,6 +90,7 @@ export function Window({ id }: { id: string }) {
         display: isHidden ? "none" : "flex",
         flexDirection: "column",
         overflow: "hidden",
+        opacity: isResizing && focusedWindow === id ? 0.85 : 1,
         zIndex: focusedWindow === id ? 1 : 0,
         isolation: "isolate",
         minWidth: MIN_WINDOW_SIZE.width,
