@@ -7,6 +7,7 @@ import { getSettingsFromJSON } from "@/lib/getSettingsFromRequest";
 import { isLocal } from "@/lib/isLocal";
 import { log } from "@/lib/log";
 import { checkAccess } from "@/lib/apiGuard";
+import { sanitizeUserMessages } from "@/lib/sanitizeMessages";
 
 export async function POST(req: Request) {
   const denied = await checkAccess(req, "chat");
@@ -25,9 +26,7 @@ export async function POST(req: Request) {
   const { messages: rawMessages } = body;
 
   // Strip any client-injected system messages and limit size
-  const messages = (rawMessages as any[])
-    .filter((m: any) => m.role === "user" || m.role === "assistant")
-    .slice(-20);
+  const messages = sanitizeUserMessages(rawMessages);
 
   log(messages);
 

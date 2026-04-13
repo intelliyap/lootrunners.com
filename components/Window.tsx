@@ -13,7 +13,7 @@ import { windowsListAtom } from "@/state/windowsList";
 import { MIN_WINDOW_SIZE, windowAtomFamily } from "@/state/window";
 import { WindowBody } from "./WindowBody";
 import styles from "./Window.module.css";
-import { MouseEventHandler, TouchEventHandler, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { isMobile } from "@/lib/isMobile";
 import Image from "next/image";
 import { createWindow } from "@/lib/createWindow";
@@ -357,7 +357,7 @@ export function Window({ id }: { id: string }) {
 
 function createResizeEvent<T>(
   cb: (e: MouseEvent | TouchEvent, delta: { x: number; y: number }) => void
-): { onMouseDown: MouseEventHandler<T>; onTouchStart: TouchEventHandler<T> } {
+): { onMouseDown: React.MouseEventHandler<T>; onTouchStart: React.TouchEventHandler<T> } {
   const handleStart = (e: MouseEvent | TouchEvent) => {
     let last = { x: 0, y: 0 };
     if ("clientX" in e) {
@@ -399,7 +399,7 @@ function createResizeEvent<T>(
   };
 
   return {
-    onMouseDown: handleStart as any,
-    onTouchStart: handleStart as any,
+    onMouseDown: (e: React.MouseEvent<T>) => handleStart(e.nativeEvent),
+    onTouchStart: (e: React.TouchEvent<T>) => handleStart(e.nativeEvent),
   };
 }
