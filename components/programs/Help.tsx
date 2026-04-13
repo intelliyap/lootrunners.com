@@ -92,7 +92,10 @@ export function Help({ id }: { id: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachment, setAttachment] = useState<string | null>(null);
-  const [needsAuth, setNeedsAuth] = useState(false);
+  const [needsAuth, setNeedsAuth] = useState(() => {
+    if (typeof document === "undefined") return false;
+    return !document.cookie.includes("lr_session=");
+  });
 
   const sendMessage = async () => {
     const newMessage = {
