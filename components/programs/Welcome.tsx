@@ -295,13 +295,7 @@ export function Welcome({ id: _id }: { id: string }) {
     { title: "Tutorial", key: "tutorial" },
   ];
 
-  const [selectedEntry, setSelectedEntry] = useState(() => {
-    if (typeof window !== "undefined") {
-      const onboarded = localStorage.getItem("onboarded");
-      return onboarded ? "updates" : "welcome";
-    }
-    return "welcome";
-  });
+  const [selectedEntry, setSelectedEntry] = useState("welcome");
 
   useEffect(() => {
     if (typeof window !== "undefined" && !localStorage.getItem("onboarded")) {
