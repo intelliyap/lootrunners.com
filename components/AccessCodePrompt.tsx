@@ -44,6 +44,7 @@ export function AccessCodePrompt({
       <div style={{ display: "flex", gap: 5 }}>
         <input
           type="password"
+          aria-label="Access code"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           autoFocus

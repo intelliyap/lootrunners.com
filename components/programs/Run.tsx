@@ -120,6 +120,7 @@ export function Run({ id }: { id: string }) {
       </div>
       <div className="field-row">
         <textarea
+          aria-label="Program description"
           placeholder="Describe the program you want to run"
           id="program-description"
           rows={2}

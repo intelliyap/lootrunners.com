@@ -19,7 +19,7 @@ export function MenuBar({ options }: { options: Options }) {
   if (!options.length) return null;
 
   return (
-    <div className={styles.menuBar}>
+    <div className={styles.menuBar} role="menubar">
       {options.map((optionGroup) => (
         <MenuBarButton
           key={optionGroup.label}
@@ -84,6 +84,8 @@ function MenuBarButton({
         className={cx(styles.menuBarButton, {
           [styles.isOpen]: openMenuLabel === optionGroup.label,
         })}
+        aria-haspopup="true"
+        aria-expanded={openMenuLabel === optionGroup.label}
         onClick={() =>
           setOpenMenuLabel(
             openMenuLabel === optionGroup.label ? null : optionGroup.label
@@ -115,6 +117,7 @@ function MenuBarDropdown({
   return (
     <div
       className={cx(styles.menuBarDropdown, "window")}
+      role="menu"
       style={{
         position: "fixed",
         top: anchorRect.bottom,
@@ -126,6 +129,7 @@ function MenuBarDropdown({
           item && (
             <button
               key={item.label}
+              role="menuitem"
               onClick={() => {
                 item.onClick();
                 closeMenu();
