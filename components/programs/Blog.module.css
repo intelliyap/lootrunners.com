@@ -29,7 +29,6 @@
     width: 100%;
     border-right: none;
     border-bottom: 1px solid #808080;
-    max-height: none;
   }
 }
 
@@ -92,15 +91,11 @@
 }
 
 .backButton {
-  display: none;
+  display: inline-block;
   margin-bottom: 12px;
   padding: 4px 12px;
   font-size: 12px;
   cursor: pointer;
-
-  @media (max-width: 768px) {
-    display: inline-block;
-  }
 }
 
 .postHeading {
