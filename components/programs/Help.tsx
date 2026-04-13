@@ -51,7 +51,35 @@ Rules:
 `;
 };
 
-const betweenHtmlRegex = /```html[\s\S]*?<html>([\s\S]*?)<\/html>[\s\S]*?```/;
+function extractHtmlFromResponse(str: string): string | null {
+  const codeStart = str.indexOf("```html");
+  if (codeStart === -1) return null;
+  const htmlStart = str.indexOf("<html>", codeStart);
+  const htmlEnd = str.indexOf("</html>", htmlStart);
+  if (htmlStart === -1 || htmlEnd === -1) return null;
+  return str.slice(htmlStart + 6, htmlEnd);
+}
+
+function hasHtmlCodeBlock(str: string): boolean {
+  return str.includes("```html") && str.includes("</html>");
+}
+
+function stripHtmlCodeBlock(str: string): string {
+  const codeStart = str.indexOf("```html");
+  if (codeStart === -1) return str;
+  const htmlEnd = str.indexOf("</html>", codeStart);
+  if (htmlEnd === -1) return str;
+  // Find the closing ``` after </html>
+  const closingTicks = str.indexOf("```", htmlEnd);
+  const blockEnd = closingTicks !== -1 ? closingTicks + 3 : htmlEnd + 7;
+  return str.slice(0, codeStart) + str.slice(blockEnd);
+}
+
+const trimMessages = (msgs: Messages) => {
+  const system = msgs.filter(m => m.role === "system");
+  const rest = msgs.filter(m => m.role !== "system").slice(-48);
+  return [...system, ...rest];
+};
 
 export function Help({ id }: { id: string }) {
   const helpWindow = useAtomValue(windowAtomFamily(id));
@@ -113,10 +141,10 @@ export function Help({ id }: { id: string }) {
         if (response.status === 401) {
           setNeedsAuth(true);
         } else {
-          setMessages([
+          setMessages(trimMessages([
             ...allMessages,
             { role: "assistant", content: "Something went wrong. Please try again." },
-          ]);
+          ]));
         }
         return;
       }
@@ -124,24 +152,24 @@ export function Help({ id }: { id: string }) {
       const data = await response.json();
 
       if (typeof data === "string") {
-        const newHtml = data.match(betweenHtmlRegex);
-        if (newHtml) {
-          const fixedCode = `<!DOCTYPE html><html>${newHtml[1]}</html>`;
+        const extracted = extractHtmlFromResponse(data);
+        if (extracted) {
+          const fixedCode = `<!DOCTYPE html><html>${extracted}</html>`;
           setPendingFix(fixedCode);
         }
-        setMessages([...allMessages, { role: "assistant", content: data }]);
+        setMessages(trimMessages([...allMessages, { role: "assistant", content: data }]));
       } else {
-        setMessages([
+        setMessages(trimMessages([
           ...allMessages,
           { role: "assistant", content: "Unexpected response. Please try again." },
-        ]);
+        ]));
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      setMessages([
+      setMessages(trimMessages([
         ...allMessages,
         { role: "assistant", content: "Connection error. Please try again." },
-      ]);
+      ]));
     } finally {
       setIsLoading(false);
     }
@@ -353,9 +381,9 @@ function ChatMessage({
             c.type === "image_url"
         );
 
-  const hasCode = betweenHtmlRegex.test(str);
+  const hasCode = hasHtmlCodeBlock(str);
   const displayText = hasCode
-    ? str.replace(betweenHtmlRegex, "")
+    ? stripHtmlCodeBlock(str)
     : str;
 
   return (

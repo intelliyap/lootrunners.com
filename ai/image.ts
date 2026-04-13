@@ -18,7 +18,7 @@ export async function generateIcon(prompt: string): Promise<Blob | null> {
 
   const url = Array.isArray(response) ? response[0] : null;
 
-  if (!url) return null;
+  if (!url || typeof url !== "string" || !url.startsWith("https://")) return null;
 
   const arrayBuffer = await fetch(url).then((res) => res.arrayBuffer());
 

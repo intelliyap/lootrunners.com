@@ -83,6 +83,11 @@ async function programsReducer(
 ): Promise<void> {
   switch (action.type) {
     case "ADD_PROGRAM": {
+      const existing = await fsManager.getFolder(PROGRAMS_PATH, "shallow");
+      if (existing && Object.keys(existing.items).length >= 50) {
+        console.warn("Maximum program limit reached");
+        break;
+      }
       const { code, id: _id, name: _name, ...rest } = action.payload;
       const path = `${PROGRAMS_PATH}/${action.payload.id}`;
       const timestamp = Date.now();
