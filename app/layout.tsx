@@ -5,7 +5,7 @@ import "./globals.css";
 import { CSPostHogProvider } from "@/lib/CSPosthogProvider";
 import { APIProvider } from "@/lib/api/APIProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "Lootrunners",

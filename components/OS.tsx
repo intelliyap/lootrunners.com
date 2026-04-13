@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import styles from "./OS.module.css";
 import cx from "classnames";
 import { getDefaultStore, useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -202,7 +203,7 @@ function StartMenu() {
   );
 }
 
-function WindowTaskBarItem({ id }: { id: string }) {
+const WindowTaskBarItem = memo(function WindowTaskBarItem({ id }: { id: string }) {
   const [focusedWindow, setFocusedWindow] = useAtom(focusedWindowAtom);
   const [state, dispatch] = useAtom(windowAtomFamily(id));
   return (
@@ -242,4 +243,4 @@ function WindowTaskBarItem({ id }: { id: string }) {
       <span>{state.title}</span>
     </button>
   );
-}
+});

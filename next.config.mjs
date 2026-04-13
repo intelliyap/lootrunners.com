@@ -7,6 +7,7 @@ const nextConfig = {
         hostname: "localhost",
       },
     ],
+    formats: ["image/avif", "image/webp"],
   },
   transpilePackages: ["file-system-access", "fetch-blob"],
   async headers() {

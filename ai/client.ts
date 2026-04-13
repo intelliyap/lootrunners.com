@@ -11,10 +11,15 @@ export const getCheapestModel = (_mode: Provider) => {
   return "claude-haiku-4-5-20251001";
 };
 
+let cachedClient: Anthropic | null = null;
+let cachedKey: string | undefined;
+
 function getAnthropicClient(apiKey?: string): Anthropic {
-  return new Anthropic({
-    apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
-  });
+  const key = apiKey || process.env.ANTHROPIC_API_KEY;
+  if (cachedClient && cachedKey === key) return cachedClient;
+  cachedKey = key;
+  cachedClient = new Anthropic({ apiKey: key });
+  return cachedClient;
 }
 
 export function createClientFromSettings(settings: Settings): {
