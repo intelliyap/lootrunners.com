@@ -104,7 +104,7 @@ function TaskBar() {
       <div className={styles.taskbarSpacer} />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/lootrunners_logo.gif"
+        src="/lootrunners-website.png"
         alt="Lootrunners"
         className={styles.taskbarLogo}
       />
