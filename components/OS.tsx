@@ -100,6 +100,13 @@ function TaskBar() {
       {windows.map((id) => (
         <WindowTaskBarItem key={id} id={id} />
       ))}
+      <div className={styles.taskbarSpacer} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/lootrunners-website.png"
+        alt="Lootrunners"
+        className={styles.taskbarLogo}
+      />
     </div>
   );
 }

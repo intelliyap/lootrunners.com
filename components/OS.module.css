@@ -79,6 +79,19 @@
   }
 }
 
+.taskbarSpacer {
+  flex: 1;
+}
+
+.taskbarLogo {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  align-self: center;
+  margin-right: 8px;
+  opacity: 0.7;
+}
+
 @media (max-width: 768px) {
   .taskbar {
     height: 48px;
@@ -95,5 +108,10 @@
   .windowButton {
     font-size: 12px;
     min-height: 36px;
+  }
+
+  .taskbarLogo {
+    height: 16px;
+    margin-right: 6px;
   }
 }
