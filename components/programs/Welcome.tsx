@@ -8,6 +8,8 @@ import check from "@/components/assets/check.png";
 import { SettingsLink } from "../SettingsLink";
 import history from "./updateAssets/history.png";
 import mount from "./updateAssets/mount.png";
+import { sortedPosts } from "@/content/blog/posts";
+import { createWindow } from "@/lib/createWindow";
 
 type TableOfContentsEntry = {
   title: string;
@@ -48,6 +50,14 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({
   );
 };
 
+const openBlog = () => {
+  createWindow({
+    title: "Blog",
+    program: { type: "blog" },
+    size: { width: 700, height: 500 },
+  });
+};
+
 const contentByKey = {
   welcome: () => {
     return (
@@ -84,6 +94,39 @@ const contentByKey = {
             <button>Twitter</button>
           </a>
         </div>
+      </>
+    );
+  },
+  blog: () => {
+    const recentPosts = sortedPosts.slice(0, 5);
+    return (
+      <>
+        <h3>Blog</h3>
+        <p>
+          Read the latest from the Lootrunners team.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "12px 0" }}>
+          {recentPosts.map((post) => (
+            <div
+              key={post.slug}
+              style={{
+                padding: "8px 10px",
+                background: "#dfdfdf",
+                border: "1px solid #808080",
+                cursor: "pointer",
+              }}
+              onClick={openBlog}
+            >
+              <div style={{ fontWeight: "bold", fontSize: 13 }}>{post.title}</div>
+              <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>
+                {post.date} &middot; {post.author} &middot; {post.summary}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button onClick={openBlog}>
+          Open Blog
+        </button>
       </>
     );
   },
@@ -232,6 +275,7 @@ export const WIDTH = 700;
 export function Welcome({ id: _id }: { id: string }) {
   const tableOfContentsEntries: TableOfContentsEntry[] = [
     { title: "Welcome", key: "welcome" },
+    { title: "Blog", key: "blog" },
     { title: "Updates", key: "updates" },
     { title: "Filesystem", key: "filesystem" },
     { title: "Advanced", key: "advanced" },
