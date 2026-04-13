@@ -163,8 +163,12 @@ function IframeInner({ id }: { id: string }) {
     return () => window.removeEventListener("message", handleMessage);
   }, [dispatch, ref]);
 
+  // Key changes when code updates, forcing iframe to remount with new content
+  const codeVersion = program?.currentVersion || 0;
+
   return (
     <iframe
+      key={codeVersion}
       ref={ref}
       id={getIframeID(id)}
       sandbox={program?.code ? "allow-scripts" : "allow-scripts allow-same-origin"}
