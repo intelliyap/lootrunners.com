@@ -143,7 +143,7 @@ export function Help({ id }: { id: string }) {
         } else {
           setMessages(trimMessages([
             ...allMessages,
-            { role: "assistant", content: "Something went wrong. Please try again." },
+            { role: "assistant", content: "The AI service is temporarily unavailable. Please try again in a moment." },
           ]));
         }
         return;
@@ -161,14 +161,14 @@ export function Help({ id }: { id: string }) {
       } else {
         setMessages(trimMessages([
           ...allMessages,
-          { role: "assistant", content: "Unexpected response. Please try again." },
+          { role: "assistant", content: "Received an unexpected response. Please rephrase your request and try again." },
         ]));
       }
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages(trimMessages([
         ...allMessages,
-        { role: "assistant", content: "Connection error. Please try again." },
+        { role: "assistant", content: "Couldn't connect to the server. Check your internet connection and try again." },
       ]));
     } finally {
       setIsLoading(false);

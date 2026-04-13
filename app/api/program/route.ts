@@ -70,7 +70,7 @@ export async function GET(req: Request) {
     });
   }
   if (desc.length > 2000) {
-    return new Response("Description too long", { status: 400 });
+    return new Response("Description too long (max 2000 characters)", { status: 400 });
   }
 
   const programStream = await createProgramStream({

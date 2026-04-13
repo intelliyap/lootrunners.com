@@ -40,10 +40,10 @@ export default function GlobalError({
           </div>
           <div style={{ padding: 16 }}>
             <p style={{ marginBottom: 12 }}>
-              Something went wrong loading Lootrunners.
+              Lootrunners encountered an error and needs to restart.
             </p>
-            <p style={{ fontSize: 12, color: "#666", marginBottom: 16 }}>
-              {error?.message || "Unknown error"}
+            <p style={{ fontSize: 11, color: "#666", marginBottom: 16 }}>
+              Try clearing your browser cache if this keeps happening.
             </p>
             <div style={{ textAlign: "right" }}>
               <button
