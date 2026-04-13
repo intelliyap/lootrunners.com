@@ -59,6 +59,9 @@ export class FsManager {
   private rootDrive: Drive;
   private mountedDrives: { [name: string]: Drive } = {};
 
+  // Note: shallowAtoms, deepAtoms, and fileAtoms follow the same pattern
+  // (atomFamily + atomWithRefresh + smartPoll). The self-referencing cleanup
+  // callback makes extracting a shared factory non-trivial, so they stay inline.
   private shallowAtoms = atomFamily((path: string) => {
     const baseAtom = atomWithRefresh(async () =>
       this.getFolder(path, "shallow")

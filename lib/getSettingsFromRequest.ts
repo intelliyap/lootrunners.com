@@ -1,6 +1,4 @@
 import { Settings } from "@/state/settings";
-
-// TODO check if this works
 export async function getSettingsFromGetRequest(
   req: Request
 ): Promise<Settings> {
