@@ -86,28 +86,14 @@
   }
 }
 
-.logoArea {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0 8px;
-  background: linear-gradient(180deg, #000 0%, #1a1a2e 60%, #c0c0c0 100%);
-  margin: -20px -20px 16px -20px;
-  border-bottom: 2px solid #808080;
-
-  @media (max-width: 768px) {
-    margin: -12px -12px 12px -12px;
-    padding: 10px 0 6px;
-  }
-}
-
 .animatedLogo {
-  max-width: 360px;
-  width: 80%;
+  width: 120px;
   height: auto;
   object-fit: contain;
+  margin-bottom: 8px;
 
   @media (max-width: 768px) {
-    max-width: 260px;
+    width: 100px;
   }
 }
 
