@@ -19,7 +19,7 @@ export const posts: BlogPost[] = [
     content: `
 Lootrunners is a retro operating system experience powered by AI. Describe any application you want, and it gets generated on the fly — right inside a Windows 98-style desktop.
 
-![Lootrunners Desktop](/lootrunners-website.png)
+![Lootrunners Desktop](/lootrunners-website.png?v=1)
 
 ## How it works
 
