@@ -150,11 +150,23 @@ export function Help({ id }: { id: string }) {
         const extracted = extractHtmlFromResponse(data);
         if (extracted) {
           const fixedCode = `<!DOCTYPE html><html>${extracted}</html>`;
-          // Auto-apply the fix
-          programsDispatch({
-            type: "UPDATE_PROGRAM",
-            payload: { id: programID, code: fixedCode },
-          });
+          // Auto-apply: persist to filesystem
+          try {
+            await programsDispatch({
+              type: "UPDATE_PROGRAM",
+              payload: { id: programID, code: fixedCode },
+            });
+          } catch (e) {
+            console.error("Failed to persist fix:", e);
+          }
+          // Instant visual update: directly set iframe srcDoc
+          const targetWindowId = helpWindow.program.type === "help" ? helpWindow.program.targetWindowID : null;
+          if (targetWindowId) {
+            const iframe = document.getElementById(`iframe-${targetWindowId}`) as HTMLIFrameElement | null;
+            if (iframe) {
+              iframe.srcdoc = fixedCode;
+            }
+          }
         }
         setMessages(trimMessages([...allMessages, { role: "assistant", content: data }]));
       } else {
