@@ -319,7 +319,7 @@ export function Welcome({ id: _id }: { id: string }) {
     <div className={styles.welcomeContainer}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/lootrunners_logo.gif"
+        src="/lootrunners-website.png?v=1"
         alt="Lootrunners"
         className={styles.animatedLogo}
       />

@@ -137,8 +137,8 @@ function enforceInvariants(state: WindowState): WindowState {
         windowWidth - halfWindowWidth
       ),
       y: Math.min(
-        Math.max(state.pos.y, -halfWindowHeight),
-        windowHeight - halfWindowHeight
+        Math.max(state.pos.y, 0),
+        windowHeight - 40
       ),
     },
   };
