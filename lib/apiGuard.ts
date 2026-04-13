@@ -24,15 +24,38 @@ export async function checkAccess(
     );
   }
 
-  // Validate session exists AND was created with the current access code
+  // Single query: validate session + check rate limit + record generation
   const currentHash = getCodeHash();
-  const sessionResult = await query(
-    "SELECT id FROM sessions WHERE id = $1 AND code_hash = $2",
-    [sessionId, currentHash]
+  const result = await query(
+    `WITH valid_session AS (
+      SELECT id FROM sessions WHERE id = $1 AND code_hash = $2
+    ), rate_check AS (
+      SELECT COUNT(*) as count FROM generations
+      WHERE session_id = $1 AND created_at > NOW() - INTERVAL '1 hour'
+    ), insert_gen AS (
+      INSERT INTO generations (session_id, endpoint)
+      SELECT $1, $3
+      WHERE EXISTS (SELECT 1 FROM valid_session)
+        AND (SELECT count FROM rate_check) < $4
+      RETURNING id
+    )
+    SELECT
+      (SELECT COUNT(*) FROM valid_session) as session_valid,
+      (SELECT count FROM rate_check) as gen_count,
+      (SELECT COUNT(*) FROM insert_gen) as inserted`,
+    [sessionId, currentHash, endpoint, MAX_GENERATIONS_PER_HOUR]
   );
 
-  if (!sessionResult || sessionResult.rows.length === 0) {
-    // Clear the stale cookie
+  if (!result || result.rows.length === 0) {
+    return new Response(
+      JSON.stringify({ error: "Access code required" }),
+      { status: 401 }
+    );
+  }
+
+  const { session_valid, gen_count, inserted } = result.rows[0];
+
+  if (parseInt(session_valid, 10) === 0) {
     cookieStore.delete("lr_session");
     return new Response(
       JSON.stringify({ error: "Session expired. Please re-enter access code." }),
@@ -40,15 +63,7 @@ export async function checkAccess(
     );
   }
 
-  // Count generations in the last hour
-  const countResult = await query(
-    "SELECT COUNT(*) as count FROM generations WHERE session_id = $1 AND created_at > NOW() - INTERVAL '1 hour'",
-    [sessionId]
-  );
-
-  const count = countResult ? parseInt(countResult.rows[0].count, 10) : 0;
-
-  if (count >= MAX_GENERATIONS_PER_HOUR) {
+  if (parseInt(gen_count, 10) >= MAX_GENERATIONS_PER_HOUR || parseInt(inserted, 10) === 0) {
     return new Response(
       JSON.stringify({
         error: `You've reached the limit of ${MAX_GENERATIONS_PER_HOUR} generations per hour. Take a break and try again soon.`,
@@ -56,12 +71,6 @@ export async function checkAccess(
       { status: 429 }
     );
   }
-
-  // Record this generation
-  await query(
-    "INSERT INTO generations (session_id, endpoint) VALUES ($1, $2)",
-    [sessionId, endpoint]
-  );
 
   return null;
 }
