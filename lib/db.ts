@@ -94,11 +94,22 @@ async function runCleanup() {
   }
 }
 
+// Initialize tables and cleanup on first pool access
+let initPromise: Promise<void> | null = null;
+
+function ensureInit() {
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    await ensureTables();
+    await scheduleCleanup();
+  })();
+  return initPromise;
+}
+
 export async function query(text: string, params?: unknown[]) {
   const p = getPool();
   if (!p) return null;
-  await ensureTables();
-  await scheduleCleanup();
+  await ensureInit();
   return p.query(text, params);
 }
 
