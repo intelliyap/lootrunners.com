@@ -96,6 +96,7 @@ export function Help({ id }: { id: string }) {
     if (typeof document === "undefined") return false;
     return !document.cookie.includes("lr_session=");
   });
+  const [pendingFix, setPendingFix] = useState<string | null>(null);
 
   const sendMessage = async () => {
     const newMessage = {
@@ -143,13 +144,9 @@ export function Help({ id }: { id: string }) {
         const newHtml = data.match(betweenHtmlRegex);
 
         if (newHtml) {
-          programsDispatch({
-            type: "UPDATE_PROGRAM",
-            payload: {
-              id: programID,
-              code: `<!DOCTYPE html><html>${newHtml[1]}</html>`,
-            },
-          });
+          // Don't auto-apply — store pending fix for user to review
+          const fixedCode = `<!DOCTYPE html><html>${newHtml[1]}</html>`;
+          setPendingFix(fixedCode);
         }
 
         setMessages([
@@ -209,18 +206,45 @@ export function Help({ id }: { id: string }) {
   return (
     <div className={styles.chatContainer}>
       <div className={styles.chatBox} role="log" aria-label="Chat messages">
-        <Message
+        <ChatMessage
           msg={{
             role: "system",
             content:
-              "Hey! I built this app. Tell me about any bugs or changes you want — I'll fix the code and update the app live. \n\n**What needs fixing?**",
+              "Hey! I built this app. Tell me about any bugs or changes you want — describe the issue and I'll generate a fix you can apply. \n\n**What needs fixing?**",
           }}
+          pendingFix={null}
+          onApplyFix={() => {}}
+          onSkipFix={() => {}}
+          onRequestFix={() => {}}
+          isLastAssistant={false}
         />
-        {messages
-          .filter((msg) => msg.role !== "system")
-          .map((msg, index) => (
-            <Message key={index} msg={msg} />
-          ))}
+        {(() => {
+          const visibleMessages = messages.filter((msg) => msg.role !== "system");
+          const lastAssistantIndex = visibleMessages.length - 1 -
+            [...visibleMessages].reverse().findIndex((m) => m.role === "assistant");
+          return visibleMessages.map((msg, index) => (
+            <ChatMessage
+              key={index}
+              msg={msg}
+              pendingFix={pendingFix}
+              onApplyFix={() => {
+                if (pendingFix) {
+                  programsDispatch({
+                    type: "UPDATE_PROGRAM",
+                    payload: { id: programID, code: pendingFix },
+                  });
+                  setPendingFix(null);
+                }
+              }}
+              onSkipFix={() => setPendingFix(null)}
+              onRequestFix={() => {
+                setInput("Please fix this — return the complete updated HTML.");
+                setTimeout(() => sendMessage(), 100);
+              }}
+              isLastAssistant={msg.role === "assistant" && index === lastAssistantIndex}
+            />
+          ));
+        })()}
         {isLoading && (
           <div className={styles.loadingIndicator}>
             <span>L</span>
@@ -291,7 +315,21 @@ export function Help({ id }: { id: string }) {
   );
 }
 
-const Message = ({ msg }: { msg: Message }) => {
+function ChatMessage({
+  msg,
+  pendingFix,
+  onApplyFix,
+  onSkipFix,
+  onRequestFix,
+  isLastAssistant,
+}: {
+  msg: Message;
+  pendingFix: string | null;
+  onApplyFix: () => void;
+  onSkipFix: () => void;
+  onRequestFix: () => void;
+  isLastAssistant: boolean;
+}) {
   const str =
     typeof msg.content === "string"
       ? msg.content
@@ -307,6 +345,12 @@ const Message = ({ msg }: { msg: Message }) => {
           (c): c is { type: "image_url"; image_url: { url: string } } =>
             c.type === "image_url"
         );
+
+  const hasCode = betweenHtmlRegex.test(str);
+  const displayText = hasCode
+    ? str.replace(betweenHtmlRegex, "")
+    : str;
+
   return (
     <div>
       <div
@@ -322,13 +366,33 @@ const Message = ({ msg }: { msg: Message }) => {
             style={{ maxWidth: 200, maxHeight: 200, objectFit: "contain" }}
           />
         ))}
-        <Markdown className={styles.markdown}>
-          {msg.role === "assistant"
-            ? str.replace(betweenHtmlRegex, "**App updated**")
-            : str}
-        </Markdown>
+        {displayText.trim() && (
+          <Markdown className={styles.markdown}>{displayText}</Markdown>
+        )}
+        {/* Show Apply/Skip buttons when AI returned code */}
+        {msg.role === "assistant" && hasCode && pendingFix && isLastAssistant && (
+          <div className={styles.fixActions}>
+            <div className={styles.fixBanner}>Fix ready to apply</div>
+            <div className={styles.fixButtons}>
+              <button onClick={onApplyFix} className={styles.applyButton}>
+                Apply Fix
+              </button>
+              <button onClick={onSkipFix}>
+                Skip
+              </button>
+            </div>
+          </div>
+        )}
+        {/* Show "Fix it" button when AI explained but didn't return code */}
+        {msg.role === "assistant" && !hasCode && isLastAssistant && (
+          <div className={styles.fixActions}>
+            <button onClick={onRequestFix} className={styles.fixItButton}>
+              Fix it for me
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
