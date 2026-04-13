@@ -1,0 +1,159 @@
+.blogContainer {
+  position: relative;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #c0c0c0;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid #808080;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #808080;
+    max-height: 150px;
+  }
+}
+
+.sidebarTitle {
+  font-size: 0.9rem;
+  font-weight: bold;
+  background: #000080;
+  color: #fff;
+  padding: 4px 8px;
+}
+
+.postList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.postList li {
+  padding: 6px 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #dfdfdf;
+}
+
+.postList li:hover {
+  background: #dfdfdf;
+}
+
+.selectedPost {
+  background: #000080 !important;
+  color: #fff;
+}
+
+.selectedPost .postDate {
+  color: #aac;
+}
+
+.postTitle {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.postDate {
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+}
+
+.postHeading {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.postMeta {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #808080;
+}
+
+.markdown {
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+
+  & h2 {
+    font-size: 1.2rem;
+    margin: 16px 0 8px;
+  }
+
+  & h3 {
+    font-size: 1rem;
+    margin: 12px 0 6px;
+  }
+
+  & p {
+    margin: 8px 0;
+  }
+
+  & ul,
+  & ol {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+
+  & li {
+    margin: 4px 0;
+  }
+
+  & code {
+    background: #ddd;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+
+  & pre {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    padding: 8px;
+    overflow-x: auto;
+    font-size: 11px;
+    white-space: pre-wrap;
+    margin: 8px 0;
+  }
+
+  & pre code {
+    background: none;
+    padding: 0;
+  }
+
+  & strong {
+    font-weight: bold;
+  }
+}
