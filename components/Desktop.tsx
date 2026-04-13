@@ -38,8 +38,14 @@ function gridToPixels(col: number, row: number, gridSize: number) {
 type IconPosition = { col: number; row: number };
 type IconPositions = Record<string, IconPosition>;
 
+const BLOG_ICON_ID = "__blog__";
+
 function getDefaultPositions(programs: ProgramEntry[], existing: IconPositions): IconPositions {
   const positions = { ...existing };
+  // Reserve (0,0) for Blog icon
+  if (!positions[BLOG_ICON_ID]) {
+    positions[BLOG_ICON_ID] = { col: 0, row: 0 };
+  }
   const occupied = new Set(
     Object.values(positions).map((p) => `${p.col},${p.row}`)
   );
@@ -105,8 +111,26 @@ export const Desktop = () => {
     setIconPositions((prev) => ({ ...prev, [id]: { col, row } }));
   }, []);
 
+  const openBlog = useCallback(() => {
+    createWindow({
+      title: "Blog",
+      program: { type: "blog" },
+      size: { width: 700, height: 500 },
+    });
+  }, []);
+
   return (
     <div className={styles.desktop} onClick={() => setSelectedIcon(null)}>
+      <BuiltInIcon
+        id={BLOG_ICON_ID}
+        name="Blog"
+        onOpen={openBlog}
+        isSelected={selectedIcon === BLOG_ICON_ID}
+        onSelect={() => setSelectedIcon(BLOG_ICON_ID)}
+        position={iconPositions[BLOG_ICON_ID] || { col: 0, row: 0 }}
+        onMove={(col, row) => moveIcon(BLOG_ICON_ID, col, row)}
+        mobile={mobile}
+      />
       {programs.map((program) => (
         <ProgramIcon
           key={program.name}
@@ -307,6 +331,146 @@ function ProgramIcon({
         draggable={false}
       />
       <div className={styles.programName}>{program.name}</div>
+    </button>
+  );
+}
+
+function BuiltInIcon({
+  id: _id,
+  name,
+  onOpen,
+  isSelected,
+  onSelect,
+  position,
+  onMove: onMoveIcon,
+  mobile,
+}: {
+  id: string;
+  name: string;
+  onOpen: () => void;
+  isSelected: boolean;
+  onSelect: () => void;
+  position: IconPosition;
+  onMove: (col: number, row: number) => void;
+  mobile: boolean;
+}) {
+  const lastClickRef = useRef(0);
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => { cleanupRef.current?.(); };
+  }, []);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isDraggingRef.current) return;
+    if (mobile) {
+      onOpen();
+    } else {
+      const now = Date.now();
+      if (now - lastClickRef.current < DOUBLE_CLICK_MS) {
+        onOpen();
+        lastClickRef.current = 0;
+      } else {
+        onSelect();
+        lastClickRef.current = now;
+      }
+    }
+  };
+
+  const startDrag = (startX: number, startY: number) => {
+    const gridSize = getGridSize();
+    const origin = gridToPixels(position.col, position.row, gridSize);
+    isDraggingRef.current = false;
+
+    const onPointerMove = (moveX: number, moveY: number) => {
+      const dx = moveX - startX;
+      const dy = moveY - startY;
+      if (!isDraggingRef.current && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
+        isDraggingRef.current = true;
+        setDragging(true);
+        onSelect();
+      }
+      if (isDraggingRef.current) {
+        setDragOffset({ x: dx, y: dy });
+      }
+    };
+
+    const onEnd = (endX: number, endY: number) => {
+      cleanup();
+      if (isDraggingRef.current) {
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const snapped = snapToGrid(origin.x + dx, origin.y + dy, gridSize);
+        onMoveIcon(snapped.col, snapped.row);
+      }
+      setDragging(false);
+      setDragOffset(null);
+      setTimeout(() => { isDraggingRef.current = false; }, 50);
+    };
+
+    const cancel = () => {
+      cleanup();
+      setDragging(false);
+      setDragOffset(null);
+      isDraggingRef.current = false;
+    };
+
+    const onMouseMove = (e: MouseEvent) => onPointerMove(e.clientX, e.clientY);
+    const onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
+
+    const cleanup = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("blur", cancel);
+      cleanupRef.current = null;
+    };
+
+    cleanupRef.current = cleanup;
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("blur", cancel);
+  };
+
+  const gridSize = getGridSize();
+  const basePos = gridToPixels(position.col, position.row, gridSize);
+  const pixelPos = dragging && dragOffset
+    ? { x: basePos.x + dragOffset.x, y: basePos.y + dragOffset.y }
+    : basePos;
+
+  return (
+    <button
+      className={cx(styles.programIcon, {
+        [styles.selected]: isSelected,
+        [styles.dragging]: dragging,
+      })}
+      style={{
+        position: "absolute",
+        left: pixelPos.x,
+        top: pixelPos.y,
+        width: gridSize,
+        height: gridSize,
+      }}
+      onClick={handleClick}
+      onMouseDown={(e) => {
+        if (e.button === 0) {
+          e.preventDefault();
+          startDrag(e.clientX, e.clientY);
+        }
+      }}
+    >
+      <Image
+        unoptimized
+        src={defaultIcon}
+        alt={name}
+        width={24}
+        height={24}
+        draggable={false}
+      />
+      <div className={styles.programName}>{name}</div>
     </button>
   );
 }

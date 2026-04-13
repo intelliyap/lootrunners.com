@@ -118,6 +118,16 @@ function StartMenu() {
       },
     },
     {
+      label: "Blog",
+      cb: () => {
+        createWindow({
+          title: "Blog",
+          program: { type: "blog" },
+          size: { width: 700, height: 500 },
+        });
+      },
+    },
+    {
       label: "Run",
       cb: () => {
         createWindow({

@@ -24,7 +24,8 @@ export type Program =
       alertId?: string;
       icon?: "x";
       actions?: AlertAction[];
-    };
+    }
+  | { type: "blog" };
 
 export type AlertAction = {
   label: string;
