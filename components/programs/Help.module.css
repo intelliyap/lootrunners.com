@@ -168,3 +168,40 @@
     padding: 0;
   }
 }
+
+.fixActions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #ccc;
+}
+
+.fixBanner {
+  font-size: 11px;
+  font-weight: bold;
+  color: #006400;
+  margin-bottom: 6px;
+}
+
+.fixButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.applyButton {
+  background: #000080;
+  color: #fff;
+  border: 1px outset #fff;
+  padding: 3px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.applyButton:hover {
+  background: #0000cc;
+}
+
+.fixItButton {
+  font-size: 11px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
