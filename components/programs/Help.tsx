@@ -98,7 +98,72 @@ export function Help({ id }: { id: string }) {
   });
   const [pendingFix, setPendingFix] = useState<string | null>(null);
 
+  const doSend = async (allMessages: Messages) => {
+    try {
+      const response = await wrappedFetch("/api/help", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: allMessages,
+          settings: getSettings(),
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setNeedsAuth(true);
+        } else {
+          setMessages([
+            ...allMessages,
+            { role: "assistant", content: "Something went wrong. Please try again." },
+          ]);
+        }
+        return;
+      }
+
+      const data = await response.json();
+
+      if (typeof data === "string") {
+        const newHtml = data.match(betweenHtmlRegex);
+        if (newHtml) {
+          const fixedCode = `<!DOCTYPE html><html>${newHtml[1]}</html>`;
+          setPendingFix(fixedCode);
+        }
+        setMessages([...allMessages, { role: "assistant", content: data }]);
+      } else {
+        setMessages([
+          ...allMessages,
+          { role: "assistant", content: "Unexpected response. Please try again." },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setMessages([
+        ...allMessages,
+        { role: "assistant", content: "Connection error. Please try again." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sendMessageWithText = async (text: string) => {
+    const newMessage = {
+      role: "user",
+      content: [
+        { type: "text", text } as const,
+      ].filter(Boolean),
+    } as Message;
+    setMessages([...messages, newMessage]);
+    setInput("");
+    setAttachment(null);
+    setIsLoading(true);
+
+    await doSend([...messages, newMessage]);
+  };
+
   const sendMessage = async () => {
+    if (!input.trim()) return;
     const newMessage = {
       role: "user",
       content: [
@@ -113,64 +178,7 @@ export function Help({ id }: { id: string }) {
     setAttachment(null);
     setIsLoading(true);
 
-    try {
-      const response = await wrappedFetch("/api/help", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, newMessage],
-          settings: getSettings(),
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          setNeedsAuth(true);
-        } else {
-          setMessages([
-            ...messages,
-            newMessage,
-            { role: "assistant", content: "Something went wrong. Please try again." },
-          ]);
-        }
-        return;
-      }
-
-      const data = await response.json();
-
-      if (typeof data === "string") {
-        const newHtml = data.match(betweenHtmlRegex);
-
-        if (newHtml) {
-          // Don't auto-apply — store pending fix for user to review
-          const fixedCode = `<!DOCTYPE html><html>${newHtml[1]}</html>`;
-          setPendingFix(fixedCode);
-        }
-
-        setMessages([
-          ...messages,
-          newMessage,
-          { role: "assistant", content: data },
-        ]);
-      } else {
-        setMessages([
-          ...messages,
-          newMessage,
-          { role: "assistant", content: "Unexpected response. Please try again." },
-        ]);
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setMessages([
-        ...messages,
-        newMessage,
-        { role: "assistant", content: "Connection error. Please try again." },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
+    await doSend([...messages, newMessage]);
   };
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -238,8 +246,7 @@ export function Help({ id }: { id: string }) {
               }}
               onSkipFix={() => setPendingFix(null)}
               onRequestFix={() => {
-                setInput("Please fix this — return the complete updated HTML.");
-                setTimeout(() => sendMessage(), 100);
+                sendMessageWithText("Please fix this — return the complete updated HTML.");
               }}
               isLastAssistant={msg.role === "assistant" && index === lastAssistantIndex}
             />
