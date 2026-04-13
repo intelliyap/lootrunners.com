@@ -120,7 +120,7 @@ export const Desktop = () => {
   }, []);
 
   return (
-    <div className={styles.desktop} onClick={() => setSelectedIcon(null)}>
+    <div className={styles.desktop} role="main" onClick={() => setSelectedIcon(null)}>
       <BuiltInIcon
         id={BLOG_ICON_ID}
         name="Blog"
@@ -303,6 +303,7 @@ function ProgramIcon({
         width: gridSize,
         height: gridSize,
       }}
+      aria-label={`Open ${program.name}`}
       onContextMenu={contextMenuHandlers.onContextMenu}
       onClick={handleClick}
       onMouseDown={(e) => {
@@ -454,6 +455,7 @@ function BuiltInIcon({
         width: gridSize,
         height: gridSize,
       }}
+      aria-label={`Open ${name}`}
       onClick={handleClick}
       onMouseDown={(e) => {
         if (e.button === 0) {

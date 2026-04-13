@@ -41,7 +41,7 @@ export function Blog({ id: _id }: { id: string }) {
     <div className={styles.blogContainer}>
       <div className={styles.contentWrapper}>
         {showSidebar && (
-          <div className={styles.sidebar}>
+          <nav className={styles.sidebar} role="navigation" aria-label="Blog posts">
             <div className={styles.sidebarTitle}>Posts</div>
             <ul className={styles.postList}>
               {sortedPosts.map((post) => (
@@ -50,19 +50,25 @@ export function Blog({ id: _id }: { id: string }) {
                   className={
                     selectedSlug === post.slug ? styles.selectedPost : ""
                   }
-                  onClick={() => selectPost(post.slug)}
+                  aria-current={selectedSlug === post.slug ? "true" : undefined}
                 >
-                  <div className={styles.postTitle}>{post.title}</div>
-                  <div className={styles.postDate}>
-                    {post.date} &middot; {post.author}
-                  </div>
+                  <button
+                    className={styles.postListButton}
+                    aria-label={`Read post: ${post.title}`}
+                    onClick={() => selectPost(post.slug)}
+                  >
+                    <div className={styles.postTitle}>{post.title}</div>
+                    <div className={styles.postDate}>
+                      {post.date} &middot; {post.author}
+                    </div>
+                  </button>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         )}
         {showContent && (
-          <div className={styles.mainContent}>
+          <div className={styles.mainContent} role="main">
             {selectedPost ? (
               <PostView
                 post={selectedPost}
@@ -89,9 +95,9 @@ function PostView({
   showBack: boolean;
 }) {
   return (
-    <article>
+    <article role="article">
       {showBack && (
-        <button className={styles.backButton} onClick={onBack}>
+        <button className={styles.backButton} onClick={onBack} aria-label="Back to all posts">
           &larr; All Posts
         </button>
       )}

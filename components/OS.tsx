@@ -87,6 +87,7 @@ function TaskBar() {
     <div className={cx("window", styles.taskbar)}>
       <button
         className={styles.startButton}
+        aria-label="Start menu"
         onClick={(e) => {
           e.stopPropagation();
           setStartMenuOpen((v) => !v);
@@ -163,10 +164,11 @@ function StartMenu() {
   ];
 
   return (
-    <div className={cx("window", styles.startMenu)}>
+    <div className={cx("window", styles.startMenu)} role="menu" aria-label="Start menu">
       {entries.map((entry) => (
         <button
           key={entry.label}
+          role="menuitem"
           onMouseDown={entry.cb}
           onTouchStart={entry.cb}
         >
@@ -175,6 +177,7 @@ function StartMenu() {
       ))}
       <form style={{ display: "contents" }}>
         <button
+          role="menuitem"
           formAction={logout}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -201,6 +204,7 @@ function WindowTaskBarItem({ id }: { id: string }) {
       className={cx(styles.windowButton, {
         [styles.active]: focusedWindow === id,
       })}
+      aria-label={state.title}
       onClick={(e) => {
         e.stopPropagation();
         setFocusedWindow(id);

@@ -205,7 +205,7 @@ export function Help({ id }: { id: string }) {
 
   return (
     <div className={styles.chatContainer}>
-      <div className={styles.chatBox}>
+      <div className={styles.chatBox} role="log" aria-label="Chat messages">
         <Message
           msg={{
             role: "system",
@@ -263,6 +263,7 @@ export function Help({ id }: { id: string }) {
         </div>
         <input
           type="text"
+          aria-label="Message"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !isLoading && sendMessage()}
@@ -278,7 +279,7 @@ export function Help({ id }: { id: string }) {
           accept="image/*"
           onChange={handleImageUpload}
         />
-        <button onClick={sendMessage} disabled={isLoading}>
+        <button aria-label="Send message" onClick={sendMessage} disabled={isLoading}>
           Send
         </button>
       </div>

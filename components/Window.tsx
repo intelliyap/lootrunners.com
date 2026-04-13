@@ -66,6 +66,8 @@ export function Window({ id }: { id: string }) {
         [styles.windowOpen]: state.status !== "minimized" && !isMinimizing,
         [styles.windowMinimize]: isMinimizing,
       })}
+      role="dialog"
+      aria-label={state.title}
       ref={windowRef}
       id={id}
       onMouseDown={() => setFocusedWindow(id)}
@@ -137,7 +139,7 @@ export function Window({ id }: { id: string }) {
         <div className="title-bar-controls">
           {state.program.type !== "iframe" ? null : (
             <button
-              aria-label="Help"
+              aria-label="Fix and iterate"
               style={{
                 marginRight: 2,
               }}

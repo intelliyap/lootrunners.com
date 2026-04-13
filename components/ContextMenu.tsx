@@ -34,9 +34,9 @@ export function ContextMenu() {
         zIndex: 1000,
       }}
     >
-      <div className={styles.contextMenu}>
+      <div className={styles.contextMenu} role="menu" aria-label="Context menu">
         {items.map((item, index) => (
-          <button key={index} className="menu-item" onClick={item.onClick}>
+          <button key={index} role="menuitem" className="menu-item" onClick={item.onClick}>
             {item.label}
           </button>
         ))}
