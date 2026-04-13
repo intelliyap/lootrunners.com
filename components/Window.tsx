@@ -139,7 +139,8 @@ export function Window({ id }: { id: string }) {
         <div className="title-bar-controls">
           {state.program.type !== "iframe" ? null : (
             <button
-              aria-label="Fix and iterate"
+              aria-label="Help"
+              title="Fix & Iterate"
               style={{
                 marginRight: 2,
               }}
