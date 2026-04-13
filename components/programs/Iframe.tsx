@@ -88,8 +88,10 @@ function IframeInner({ id }: { id: string }) {
         return;
       }
 
-      // Assuming the message contains the operation type and key-value data
       const { operation, key, value, id, returnJson } = event.data;
+
+      // Validate operation is a known string
+      if (typeof operation !== "string") return;
 
       const store = getDefaultStore();
       const registry = await store.get(registryAtom);
@@ -120,10 +122,17 @@ function IframeInner({ id }: { id: string }) {
           break;
         }
         case "chat": {
+          // Sanitize messages from iframe — only allow user/assistant roles, limit count
+          const iframeMessages = Array.isArray(value)
+            ? value
+                .filter((m: any) => typeof m === "object" && (m.role === "user" || m.role === "assistant"))
+                .slice(-10)
+                .map((m: any) => ({ role: m.role, content: typeof m.content === "string" ? m.content.slice(0, 5000) : "" }))
+            : [];
           const result = await wrappedFetch(`/api/chat`, {
             method: "POST",
             body: JSON.stringify({
-              messages: value,
+              messages: iframeMessages,
               returnJson,
               settings: getSettings(),
             }),
