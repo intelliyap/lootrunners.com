@@ -26,10 +26,10 @@ export function AccessCodePrompt({
       if (res.ok) {
         onSuccess();
       } else {
-        setError("Invalid access code");
+        setError("Incorrect code. Please try again.");
       }
     } catch {
-      setError("Connection error");
+      setError("Couldn't connect. Check your internet and try again.");
     } finally {
       setLoading(false);
     }

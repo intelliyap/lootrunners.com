@@ -51,8 +51,7 @@ export async function checkAccess(
   if (count >= MAX_GENERATIONS_PER_HOUR) {
     return new Response(
       JSON.stringify({
-        error: "Rate limit exceeded",
-        message: `Maximum ${MAX_GENERATIONS_PER_HOUR} generations per hour. Please try again later.`,
+        error: `You've reached the limit of ${MAX_GENERATIONS_PER_HOUR} generations per hour. Take a break and try again soon.`,
       }),
       { status: 429 }
     );
