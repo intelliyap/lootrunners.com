@@ -318,11 +318,14 @@ export function Welcome({ id: _id }: { id: string }) {
 
   return (
     <div className={styles.welcomeContainer}>
-      <Image
-        src={lootrunners}
-        alt="Lootrunners Logo"
-        className={styles.logo}
-      />
+      <div className={styles.logoArea}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/lootrunners_logo.gif"
+          alt="Lootrunners"
+          className={styles.animatedLogo}
+        />
+      </div>
       <div className={styles.contentWrapper}>
         <TableOfContents
           entries={tableOfContentsEntries}
