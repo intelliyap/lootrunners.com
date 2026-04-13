@@ -120,7 +120,6 @@ export function Help({ id }: { id: string }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachment, setAttachment] = useState<string | null>(null);
   const [needsAuth, setNeedsAuth] = useState(false);
-  const [pendingFix, setPendingFix] = useState<string | null>(null);
 
   const doSend = async (allMessages: Messages) => {
     try {
@@ -151,7 +150,11 @@ export function Help({ id }: { id: string }) {
         const extracted = extractHtmlFromResponse(data);
         if (extracted) {
           const fixedCode = `<!DOCTYPE html><html>${extracted}</html>`;
-          setPendingFix(fixedCode);
+          // Auto-apply the fix
+          programsDispatch({
+            type: "UPDATE_PROGRAM",
+            payload: { id: programID, code: fixedCode },
+          });
         }
         setMessages(trimMessages([...allMessages, { role: "assistant", content: data }]));
       } else {
@@ -242,11 +245,8 @@ export function Help({ id }: { id: string }) {
           msg={{
             role: "system",
             content:
-              "Hey! I built this app. Tell me about any bugs or changes you want — describe the issue and I'll generate a fix you can apply. \n\n**What needs fixing?**",
+              "Hey! I built this app. Describe any bug or change — I'll fix the code and update the app automatically. \n\n**What needs fixing?**",
           }}
-          pendingFix={null}
-          onApplyFix={() => {}}
-          onSkipFix={() => {}}
           onRequestFix={() => {}}
           isLastAssistant={false}
         />
@@ -258,17 +258,6 @@ export function Help({ id }: { id: string }) {
             <ChatMessage
               key={index}
               msg={msg}
-              pendingFix={pendingFix}
-              onApplyFix={() => {
-                if (pendingFix) {
-                  programsDispatch({
-                    type: "UPDATE_PROGRAM",
-                    payload: { id: programID, code: pendingFix },
-                  });
-                  setPendingFix(null);
-                }
-              }}
-              onSkipFix={() => setPendingFix(null)}
               onRequestFix={() => {
                 sendMessageWithText("Based on what you identified above, apply the fix now. Return the COMPLETE updated HTML document with the fix applied.");
               }}
@@ -348,16 +337,10 @@ export function Help({ id }: { id: string }) {
 
 function ChatMessage({
   msg,
-  pendingFix,
-  onApplyFix,
-  onSkipFix,
   onRequestFix,
   isLastAssistant,
 }: {
   msg: Message;
-  pendingFix: string | null;
-  onApplyFix: () => void;
-  onSkipFix: () => void;
   onRequestFix: () => void;
   isLastAssistant: boolean;
 }) {
@@ -378,9 +361,7 @@ function ChatMessage({
         );
 
   const hasCode = hasHtmlCodeBlock(str);
-  const displayText = hasCode
-    ? stripHtmlCodeBlock(str)
-    : str;
+  const displayText = hasCode ? stripHtmlCodeBlock(str) : str;
 
   return (
     <div>
@@ -400,21 +381,13 @@ function ChatMessage({
         {displayText.trim() && (
           <Markdown className={styles.markdown}>{displayText}</Markdown>
         )}
-        {/* Show Apply/Skip buttons when AI returned code */}
-        {msg.role === "assistant" && hasCode && pendingFix && isLastAssistant && (
+        {/* Show "Fix applied" confirmation when code was returned */}
+        {msg.role === "assistant" && hasCode && (
           <div className={styles.fixActions}>
-            <div className={styles.fixBanner}>Fix ready to apply</div>
-            <div className={styles.fixButtons}>
-              <button onClick={onApplyFix} className={styles.applyButton}>
-                Apply Fix
-              </button>
-              <button onClick={onSkipFix}>
-                Skip
-              </button>
-            </div>
+            <div className={styles.fixApplied}>Fix applied to app</div>
           </div>
         )}
-        {/* Show "Fix it" button when AI explained but didn't return code */}
+        {/* Show "Fix it for me" when AI explained but didn't return code */}
         {msg.role === "assistant" && !hasCode && isLastAssistant && (
           <div className={styles.fixActions}>
             <button onClick={onRequestFix} className={styles.fixItButton}>
