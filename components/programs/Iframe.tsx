@@ -93,6 +93,11 @@ function IframeInner({ id }: { id: string }) {
       // Validate operation is a known string
       if (typeof operation !== "string") return;
 
+      // Validate key to prevent prototype pollution
+      if (typeof key === "string" && (key === "__proto__" || key === "constructor" || key === "prototype")) {
+        return;
+      }
+
       const store = getDefaultStore();
       const registry = await store.get(registryAtom);
 

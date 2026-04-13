@@ -2,6 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 
 type MessageStream = ReturnType<Anthropic["messages"]["stream"]>;
 
+const MAX_STREAM_SIZE = 5 * 1024 * 1024; // 5MB
+
 export function streamAnthropicHtml(
   stream: MessageStream,
   options?: { injectIntoHead?: string }
@@ -10,6 +12,20 @@ export function streamAnthropicHtml(
 
   return new ReadableStream({
     async start(controller) {
+      let closed = false;
+
+      function safeClose() {
+        if (closed) return;
+        closed = true;
+        controller.close();
+      }
+
+      function safeError(e: unknown) {
+        if (closed) return;
+        closed = true;
+        controller.error(e);
+      }
+
       try {
         let programResult = "";
         let startedSending = false;
@@ -31,6 +47,12 @@ export function streamAnthropicHtml(
 
           const value = event.delta.text;
           programResult += value;
+
+          if (programResult.length > MAX_STREAM_SIZE) {
+            stream.abort();
+            safeError(new Error("Stream too large"));
+            break;
+          }
 
           if (startedSending) {
             const match = programResult.match(/<\/html>/);
@@ -73,15 +95,13 @@ export function streamAnthropicHtml(
         if (!programResult.includes("</html>")) {
           controller.enqueue("</html>");
         }
-        controller.close();
+        safeClose();
       } catch (e) {
         console.error("Stream error:", e);
         try {
           stream.abort();
         } catch { /* already closed */ }
-        try {
-          controller.error(e);
-        } catch { /* already closed */ }
+        safeError(e);
       }
     },
     cancel() {
