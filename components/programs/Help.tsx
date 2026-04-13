@@ -43,11 +43,10 @@ OS APIs available on window:
 ${getApiText(keys)}
 
 Rules:
-- If the user reports a bug or requests a change, fix it and return the COMPLETE updated HTML wrapped in \`\`\`html markers. The app will update live.
-- Only use \`\`\`html markers when returning a full standalone HTML document.
-- If just answering a question, respond normally without code markers.
-- Keep responses concise. Don't explain what you changed unless asked.
-- Always return complete, valid, working HTML when making changes.
+- ALWAYS return the COMPLETE updated HTML wrapped in \`\`\`html markers when the user reports any bug, issue, or requests any change. Do not just explain — fix it and return the full code.
+- Only omit code if the user is asking a pure question with no change requested.
+- Keep explanations brief. Focus on returning working code.
+- The returned HTML must be a complete standalone document wrapped in <html> tags.
 `;
 };
 
@@ -271,7 +270,7 @@ export function Help({ id }: { id: string }) {
               }}
               onSkipFix={() => setPendingFix(null)}
               onRequestFix={() => {
-                sendMessageWithText("Please fix this — return the complete updated HTML.");
+                sendMessageWithText("Based on what you identified above, apply the fix now. Return the COMPLETE updated HTML document with the fix applied.");
               }}
               isLastAssistant={msg.role === "assistant" && index === lastAssistantIndex}
             />
