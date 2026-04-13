@@ -124,10 +124,6 @@ function enforceInvariants(state: WindowState): WindowState {
     typeof window !== "undefined" ? window.innerHeight : Infinity;
 
   const halfWindowWidth = state.size.width / 2;
-  const halfWindowHeight =
-    state.size.height === "auto"
-      ? MIN_WINDOW_SIZE.height / 2
-      : state.size.height / 2;
 
   return {
     ...state,
