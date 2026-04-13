@@ -105,7 +105,7 @@ const contentByKey = {
         <p>
           Read the latest from the Lootrunners team.
         </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "12px 0" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "12px 0", maxHeight: 300, overflowY: "auto" }}>
           {recentPosts.map((post) => (
             <div
               key={post.slug}
@@ -114,11 +114,25 @@ const contentByKey = {
                 background: "#dfdfdf",
                 border: "1px solid #808080",
                 cursor: "pointer",
+                flexShrink: 0,
               }}
               onClick={openBlog}
             >
-              <div style={{ fontWeight: "bold", fontSize: 13 }}>{post.title}</div>
-              <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>
+              <div style={{
+                fontWeight: "bold",
+                fontSize: 13,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}>{post.title}</div>
+              <div style={{
+                fontSize: 11,
+                color: "#555",
+                marginTop: 2,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}>
                 {post.date} &middot; {post.author} &middot; {post.summary}
               </div>
             </div>
